@@ -18,15 +18,19 @@ Frameworks and tools for each phase of the QA pipeline, organized by technology 
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| Reqnroll | BDD framework (formerly SpecFlow) | `dotnet add package Reqnroll.NUnit` |
-| NUnit3TestAdapter | Test adapter for Reqnroll | `dotnet add package NUnit3TestAdapter` |
+| Reqnroll.xUnit | BDD framework for xUnit projects (default) | `dotnet add package Reqnroll.xUnit` |
+| Reqnroll.NUnit | BDD framework for NUnit projects | `dotnet add package Reqnroll.NUnit` |
+| NUnit3TestAdapter | Test adapter (NUnit projects only) | `dotnet add package NUnit3TestAdapter` |
+
+> Use one test framework per project. Reqnroll has a separate package per framework —
+> `Reqnroll.xUnit` for xUnit, `Reqnroll.NUnit` for NUnit. Do not mix them.
 
 ### Integration Testing
 
 | Tool | Purpose | Install |
 |------|---------|---------|
 | WebApplicationFactory | In-memory test server | `dotnet add package Microsoft.AspNetCore.Mvc.Testing` |
-| Playwright | Browser/live integration testing | `dotnet add package Microsoft.Playwright.NUnit` |
+| Playwright | Browser/live integration testing | `dotnet add package Microsoft.Playwright` |
 
 ### Property-Based Testing
 
@@ -104,8 +108,8 @@ public void GetEndpoint_P95Under2Seconds() { ... }
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| Vitest | Test framework (modern, Vite-based) | `pnpm add -D vitest` |
-| Jest | Test framework (popular alternative) | `pnpm add -D jest` |
+| Vitest | Test framework (modern, Vite-based) | `npm install -D vitest` |
+| Jest | Test framework (popular alternative) | `npm install -D jest` |
 
 Note: Vitest and Jest have built-in mocking and assertions — no separate libraries needed.
 
@@ -113,40 +117,40 @@ Note: Vitest and Jest have built-in mocking and assertions — no separate libra
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| Cucumber.js | BDD framework | `pnpm add -D @cucumber/cucumber` |
+| Cucumber.js | BDD framework | `npm install -D @cucumber/cucumber` |
 
 ### Integration Testing
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| Supertest | HTTP assertion library | `pnpm add -D supertest` |
-| Playwright | Browser integration testing | `pnpm add -D @playwright/test` |
+| Supertest | HTTP assertion library | `npm install -D supertest` |
+| Playwright | Browser integration testing | `npm install -D @playwright/test` |
 
 ### Property-Based Testing
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| fast-check | Property-based testing | `pnpm add -D fast-check` |
+| fast-check | Property-based testing | `npm install -D fast-check` |
 
 ### Code Coverage
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| c8 | V8-based coverage | `pnpm add -D c8` |
-| istanbul | Coverage instrumentation | `pnpm add -D nyc` |
+| @vitest/coverage-v8 | V8-based coverage (Vitest provider `v8`) | `npm install -D @vitest/coverage-v8` |
+| @vitest/coverage-istanbul | Istanbul-based coverage (alternative) | `npm install -D @vitest/coverage-istanbul` |
 
 ### Mutation Testing
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| Stryker.js | Mutation testing | `pnpm add -D @stryker-mutator/core` |
+| Stryker.js | Mutation testing | `npm install -D @stryker-mutator/core` |
 
 ### Performance Testing
 
 | Tool | Purpose | Install |
 |------|---------|---------|
 | k6 | Load testing | External tool (https://k6.io) |
-| autocannon | Node.js HTTP load testing | `pnpm add -D autocannon` |
+| autocannon | Node.js HTTP load testing | `npm install -D autocannon` |
 
 ### Test Categorization
 
@@ -173,7 +177,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: ['text', 'html', 'cobertura'],
       thresholds: {
         lines: 80,
@@ -288,7 +292,7 @@ directory = coverage_html_report
 | BDD | Reqnroll | Cucumber.js | Behave |
 | Integration | WebApplicationFactory + Playwright | Supertest + Playwright | httpx + Playwright |
 | Property-Based | FsCheck | fast-check | Hypothesis |
-| Coverage | Coverlet + ReportGenerator | c8 | coverage.py |
+| Coverage | Coverlet + ReportGenerator | @vitest/coverage-v8 | coverage.py |
 | Mutation | Stryker.NET | Stryker.js | mutmut / cosmic-ray |
 | Performance | HttpClient concurrent / NBomber | autocannon / k6 | locust |
 | Security | Custom + Playwright | Custom + Playwright | Custom + Playwright |
@@ -350,8 +354,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: pnpm install
-      - run: pnpm test -- --reporter=verbose --grep=Smoke
+      - run: npm install
+      - run: npm test -- --reporter=verbose --testNamePattern=Smoke
 
   regression:
     needs: smoke
@@ -361,6 +365,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: pnpm install
-      - run: pnpm test --coverage
+      - run: npm install
+      - run: npm test --coverage
 ```

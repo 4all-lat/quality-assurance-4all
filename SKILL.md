@@ -1,6 +1,7 @@
 ---
 name: quality-assurance-4all
-description: End-to-end QA pipeline guide from spec to production. Covers TDD, BDD, SDD, property-based testing, mutation testing, security testing, performance testing, code coverage, and regression suite stratification. Use when starting a new project, establishing QA standards, or preparing a solution for production delivery.
+version: 2.0.0
+description: End-to-end QA pipeline from spec to production for any stack (.NET, Node.js, Python). Quality gates for TDD, BDD, SDD, unit + integration + contract testing, code coverage, property-based testing, security (OWASP API Top 10), performance, mutation testing, and regression suite stratification. Use when setting up QA for a new project, establishing team QA standards, auditing test coverage, defining a CI/CD quality pipeline, or preparing a solution for production release.
 ---
 
 # Quality Assurance Pipeline — From Spec to Production
@@ -16,6 +17,39 @@ A comprehensive, reusable QA methodology that ensures quality at every stage of 
 - Defining a CI/CD quality pipeline
 - Responding to "how do we ensure quality?" questions
 - Planning a release with confidence in test coverage
+
+---
+
+## How to Use This Skill
+
+Apply the pipeline as a **set of gates**, not a checklist you run once. Work through it in this order
+when setting up or auditing a project:
+
+1. **Assess the project.** Identify the stack (.NET, Node.js/TS, or Python), the current lifecycle
+   stage (new / in development / pre-release / production), and which phases already have coverage.
+   Use [`references/tools-by-stack.md`](references/tools-by-stack.md) to pick frameworks.
+2. **Scaffold the test project.** Run
+   `scripts/setup-qa-project.sh` (bash) or `scripts/setup-qa-project.ps1` (PowerShell) to create the
+   folder structure and install QA packages for the detected stack.
+3. **Write the spec first.** Use [`assets/ai-spec-template.md`](assets/ai-spec-template.md). No code
+   (and no tests) until the spec is approved (Phase 1).
+4. **Walk phases 2–6 bottom-up** (Unit → BDD → Integration → Property-Based → Security). Each phase has
+   a one-line quality gate below; the full checklist for each is in
+   [`references/quality-gates.md`](references/quality-gates.md). For security, follow
+   [`references/owasp-api-testing.md`](references/owasp-api-testing.md); for contract boundaries, see
+   [`references/contract-testing.md`](references/contract-testing.md); for performance budgets with
+   code, see [`references/performance-testing.md`](references/performance-testing.md).
+5. **Stratify and wire CI (phases 7–10).** Tag tests `Smoke` / `Regression` / `Security` /
+   `Performance`, then drive them with `scripts/run-tests.sh` / `run-tests.ps1` in the CI pipeline
+   (see [`references/test-pyramid.md`](references/test-pyramid.md)).
+6. **Gate the release (Phase 11).** Walk
+   [`assets/pre-production-checklist.md`](assets/pre-production-checklist.md) and confirm the SLOs in
+   [`references/quality-gates.md`](references/quality-gates.md) are monitored.
+7. **Keep the suite healthy.** Apply the flaky-test, test-data, a11y, and visual-regression practices
+   in [`references/quality-engineering-practices.md`](references/quality-engineering-practices.md).
+
+For a quick reference, jump to the [Summary — Quality Checklist by Phase](#13-summary--quality-checklist-by-phase)
+and the anti-patterns table in [section 15](#15-anti-patterns-to-avoid).
 
 ---
 
@@ -74,7 +108,7 @@ The spec is the single source of truth. Everything — code, tests, documentatio
 # [SPEC] - Title
 
 ## 1. Metadata & Execution Routing
-- Preset, module, impact level
+- Preset, module/area, impact level, effort, stakeholders
 
 ## 2. Functional Requirement
 - Business context
@@ -92,6 +126,9 @@ The spec is the single source of truth. Everything — code, tests, documentatio
 
 ## 6. Open Questions & Blockers
 - Pending decisions, risks
+
+## 7. QA Notes (optional)
+- Properties to test, BDD scenarios, security tests
 ```
 
 ### Quality gate
@@ -339,7 +376,7 @@ Measure which lines of production code are executed by tests. Set a minimum thre
 | Stack | Coverage Tool | Report Generator |
 |-------|---------------|------------------|
 | .NET | Coverlet | ReportGenerator |
-| Node.js/TS | c8 / istanbul | built-in HTML |
+| Node.js/TS | @vitest/coverage-v8 / istanbul | built-in HTML |
 | Python | coverage.py | built-in HTML |
 
 ### Quality gate
@@ -400,11 +437,21 @@ Organize tests into tiers that run at different speeds and frequencies.
 ### CI Pipeline script
 
 ```powershell
+# PowerShell (Windows / pwsh)
 # .\run-tests.ps1 -Stage Smoke       # Quick health check
 # .\run-tests.ps1 -Stage Regression  # Full functional validation
 # .\run-tests.ps1 -Stage Full        # Everything including perf + security
 # .\run-tests.ps1 -Stage Coverage    # Generate coverage report
 # .\run-tests.ps1 -Stage Mutation    # Run mutation testing
+```
+
+```bash
+# bash (macOS / Linux / CI — auto-detects .NET, Node.js, Python)
+# ./run-tests.sh -s Smoke
+# ./run-tests.sh -s Regression
+# ./run-tests.sh -s Full --mutation-threshold 60
+# ./run-tests.sh -s Coverage
+# ./run-tests.sh -s Mutation
 ```
 
 ### Quality gate
@@ -417,25 +464,11 @@ Organize tests into tiers that run at different speeds and frequencies.
 
 ### Pre-production checklist
 
-- [ ] **Spec approved** by product owner and architect
-- [ ] **Unit tests** pass with ≥ 80% coverage
-- [ ] **BDD scenarios** pass for all acceptance criteria
-- [ ] **Integration tests** pass for all endpoint × tenant combinations
-- [ ] **Property-based tests** pass with 200+ random cases
-- [ ] **Security tests** pass (OWASP API Top 10)
-- [ ] **Performance tests** meet P95 latency targets
-- [ ] **Mutation score** ≥ 60%
-- [ ] **No surviving high-severity mutations** in critical paths
-- [ ] **Code review** approved by at least one peer
-- [ ] **No secrets in code** (API keys, passwords, connection strings)
-- [ ] **Error responses** do not contain stack traces
-- [ ] **Swagger/OpenAPI** documentation is complete and accurate
-- [ ] **Rate limiting** is configured and tested
-- [ ] **Logging** is configured (no sensitive data logged)
-- [ ] **CORS** is configured correctly (not `AllowAll` in production)
-- [ ] **JWT expiration** is set appropriately
-- [ ] **Database migrations** are reversible
-- [ ] **Rollback plan** is documented and tested
+The complete, sign-off-ready pre-production checklist (20+ items across spec, tests, security,
+configuration, database, deployment, and monitoring) lives in
+[`assets/pre-production-checklist.md`](assets/pre-production-checklist.md). Every item must be
+checked before production release. Consolidated quality gates for all 11 phases are in
+[`references/quality-gates.md`](references/quality-gates.md).
 
 ### Recommended production quality options
 
@@ -457,12 +490,8 @@ Organize tests into tiers that run at different speeds and frequencies.
 
 ### Production monitoring SLOs
 
-| SLO | Target | Alert threshold |
-|-----|--------|-----------------|
-| Availability | 99.9% | < 99.5% for 5 min |
-| P95 latency | < 2s | > 5s for 5 min |
-| Error rate | < 0.1% | > 1% for 5 min |
-| Rate limit hits | < 5% of requests | > 10% for 10 min |
+SLO targets and alert thresholds are consolidated in
+[`references/quality-gates.md`](references/quality-gates.md) (Phase 11).
 
 ### Post-deployment validation
 
@@ -507,9 +536,8 @@ dotnet add package coverlet.collector
 dotnet add package Microsoft.AspNetCore.Mvc.Testing
 dotnet add package FsCheck
 dotnet add package FsCheck.Xunit
-dotnet add package Reqnroll.NUnit
-dotnet add package NUnit3TestAdapter
-dotnet add package Microsoft.Playwright.NUnit
+dotnet add package Reqnroll.xUnit
+dotnet add package Microsoft.Playwright
 
 # 3. Configure coverage in .csproj
 # <CollectCoverage>true</CollectCoverage>
@@ -561,10 +589,13 @@ Detailed deep-dive documentation for each topic:
 
 | File | Content |
 |------|---------|
-| `references/quality-gates.md` | Consolidated quality gates and checklists for all 11 phases |
+| `references/quality-gates.md` | Consolidated quality gates and checklists for all 11 phases (single SLO source) |
 | `references/owasp-api-testing.md` | Detailed test implementations for OWASP API Top 10 (with .NET examples) |
 | `references/tools-by-stack.md` | Frameworks and tools by stack (.NET, Node.js/TS, Python) with CI/CD examples |
 | `references/test-pyramid.md` | Test pyramid, regression stratification, and CI pipeline integration deep dive |
+| `references/contract-testing.md` | Contract testing (Pact + OpenAPI schema), consumer/provider workflow |
+| `references/performance-testing.md` | Performance testing with code examples (HttpClient, NBomber, k6, locust) |
+| `references/quality-engineering-practices.md` | Flaky tests, test data, a11y, visual regression, code review checklist, Definition of Done |
 
 ### assets/
 
@@ -572,7 +603,7 @@ Reusable templates and configuration snippets:
 
 | File | Content |
 |------|---------|
-| `assets/ai-spec-template.md` | AI Spec / Feature Spec template (6-section WMSTek convention) |
+| `assets/ai-spec-template.md` | AI Spec / Feature Spec template (7-section convention, section 7 optional) |
 | `assets/bdd-feature-template.feature` | Gherkin BDD scenario template (Smoke, Regression, Security, Property-Based) |
 | `assets/pre-production-checklist.md` | Pre-production quality checklist with sign-off table |
 | `assets/coverage-config.xml` | Coverlet coverage configuration snippet for .csproj |
@@ -583,8 +614,10 @@ Working scripts for CI/CD and project setup:
 
 | File | Content |
 |------|---------|
-| `scripts/run-tests.ps1` | Stratified test runner (Smoke / Regression / Full / Coverage / Mutation) |
-| `scripts/setup-qa-project.ps1` | Quick-start QA project scaffolder (.NET, Node.js, Python) |
-| `scripts/README.md` | Detailed documentation for both scripts |
+| `scripts/run-tests.sh` | Stratified test runner (bash — cross-platform, auto-detects .NET/Node/Python) |
+| `scripts/run-tests.ps1` | Stratified test runner (PowerShell — .NET) |
+| `scripts/setup-qa-project.sh` | Quick-start QA project scaffolder (bash — .NET, Node.js, Python) |
+| `scripts/setup-qa-project.ps1` | Quick-start QA project scaffolder (PowerShell — .NET, Node.js, Python) |
+| `scripts/README.md` | Detailed documentation for all scripts |
 
 See `README.md` in the skill root for a human-readable overview of the entire skill.

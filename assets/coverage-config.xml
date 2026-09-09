@@ -1,5 +1,5 @@
 <!-- Coverage Configuration Snippet for .NET / Coverlet -->
-<!-- Add this to your test project .csproj file inside <ProjectGroup> -->
+<!-- Add this to your test project .csproj file inside <PropertyGroup> -->
 
 <PropertyGroup>
   <CollectCoverage>true</CollectCoverage>
@@ -36,10 +36,11 @@
     dotnet tool install -g dotnet-reportgenerator-globaltool
     reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html
 
-  For Vitest (Node.js/TS), use vitest.config.ts instead:
+  For Vitest (Node.js/TS), install the v8 provider and use vitest.config.ts:
+    npm install -D @vitest/coverage-v8
     test: {
       coverage: {
-        provider: 'c8',
+        provider: 'v8',
         reporter: ['text', 'html', 'cobertura'],
         thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
         exclude: ['node_modules/', 'dist/', '**/*.config.*'],

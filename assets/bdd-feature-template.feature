@@ -30,12 +30,11 @@ Feature: [Endpoint Name] for [Tenant/Context]
 
   # Regression Scenarios — run on every PR (~5min)
 
-  Scenario: Column Exclusion — sensitive columns are not returned
+  Scenario: Response Contract — required fields present, sensitive fields excluded
     Given I am authenticated as "TENANT_NAME"
     When I request GET "/api/v1/resource?page=1&pageSize=10"
-    Then the response should not contain "ExpirationDate"
-    And the response should not contain "FabricationDate"
-    And the response should not contain "SealNumber"
+    Then each item should match the fields defined in the API contract
+    And the response should not expose internal fields
 
   Scenario: Tenant Isolation — tenant A cannot see tenant B's data
     Given I am authenticated as "TENANT_A"
@@ -56,11 +55,6 @@ Feature: [Endpoint Name] for [Tenant/Context]
     Then the response status should be 500
     And the response should not contain "StackTrace"
     And the response should not contain "at System."
-
-  Scenario: Read-Only Guarantee — no DML operations
-    Given I am authenticated as "TENANT_NAME"
-    When I request GET "/api/v1/resource?page=1&pageSize=10"
-    Then no INSERT, UPDATE, or DELETE should have been executed on the database
 
   Scenario: Pagination — page 1 returns most recent items
     Given I am authenticated as "TENANT_NAME"

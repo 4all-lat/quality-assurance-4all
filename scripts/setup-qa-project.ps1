@@ -71,9 +71,8 @@ switch ($Stack) {
             "Microsoft.AspNetCore.Mvc.Testing",
             "FsCheck",
             "FsCheck.Xunit",
-            "Reqnroll.NUnit",
-            "NUnit3TestAdapter",
-            "Microsoft.Playwright.NUnit"
+            "Reqnroll.xUnit",
+            "Microsoft.Playwright"
         )
         foreach ($pkg in $packages) {
             Write-Host "  - $pkg" -ForegroundColor Gray
@@ -121,14 +120,15 @@ switch ($Stack) {
 
         # Initialize project
         npm init -y 2>$null
+        npm pkg set type=module 2>$null
 
         Write-Host "[2/4] Installing QA packages..." -ForegroundColor Yellow
         $devDeps = @(
             "vitest",
+            "@vitest/coverage-v8",
             "@playwright/test",
             "fast-check",
             "@cucumber/cucumber",
-            "c8",
             "@stryker-mutator/core"
         )
         Write-Host "  npm install -D $($devDeps -join ' ')" -ForegroundColor Gray
@@ -141,7 +141,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: ['text', 'html', 'cobertura'],
       thresholds: {
         lines: 80,
@@ -171,7 +171,7 @@ export default defineConfig({
         Write-Host "Next steps:" -ForegroundColor Cyan
         Write-Host "  1. Add test scripts to package.json" -ForegroundColor Gray
         Write-Host "  2. Copy BDD template to features/" -ForegroundColor Gray
-        Write-Host "  3. Run: npx vitest --grep Smoke" -ForegroundColor Gray
+        Write-Host "  3. Run: npx vitest run --testNamePattern Smoke" -ForegroundColor Gray
     }
 
     "python" {
@@ -192,7 +192,7 @@ locust>=2.0
         Set-Content -Path "requirements.txt" -Value $requirements
 
         Write-Host "[2/4] Installing QA packages..." -ForegroundColor Yellow
-        pip install -r requirements.txt 2>$null
+        python -m pip install -r requirements.txt 2>$null
 
         Write-Host "[3/4] Creating .coveragerc..." -ForegroundColor Yellow
         $coveragerc = @"

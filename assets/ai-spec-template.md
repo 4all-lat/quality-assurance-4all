@@ -1,14 +1,14 @@
 # [SPEC] - Title of the Change
 
-> This template follows the WMSTek Feature Spec convention.
-> Each section feeds different roles in the QA pipeline.
+> This template is the single source of truth for a change.
+> Each section feeds a different role in the QA pipeline.
 > Delete sections that are not applicable, but keep the numbering.
 
 ## 1. Metadata & Execution Routing
 
-- **Recommended Preset:** `full_sdlc` | `express_fix` | `doc_architecture` | `modernization`
-- **Affected WMS Module:** Name of the WMSTek module
-- **Legacy Impact Level:** Low / Medium / High
+- **Recommended Preset:** `full_lifecycle` | `quick_fix` | `doc_architecture` | `modernization`
+- **Affected Module / Area:** Name of the module or subsystem
+- **Impact Level:** Low / Medium / High
 - **Estimated Effort:** XS / S / M / L / XL
 - **Stakeholders:** Product Owner, Tech Lead, QA Lead
 

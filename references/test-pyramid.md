@@ -298,7 +298,7 @@ describe('Regression', () => {
   it('returns paginated results', async () => { ... })
 })
 
-// Run with: vitest --grep Smoke
+// Run with: vitest run --testNamePattern Smoke
 ```
 
 ### Python (pytest markers)

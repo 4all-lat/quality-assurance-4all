@@ -121,12 +121,7 @@
 
 ## Production Monitoring SLOs
 
-| SLO | Target | Alert threshold |
-|-----|--------|-----------------|
-| Availability | 99.9% | < 99.5% for 5 min |
-| P95 latency | < 2s | > 5s for 5 min |
-| Error rate | < 0.1% | > 1% for 5 min |
-| Rate limit hits | < 5% of requests | > 10% for 10 min |
+SLO targets and alert thresholds are consolidated in [`references/quality-gates.md`](../references/quality-gates.md) (Phase 11).
 
 ## Post-Deployment Validation
 

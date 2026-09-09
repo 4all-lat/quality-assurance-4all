@@ -21,6 +21,9 @@
 .PARAMETER OutputDir
     Directory for output artifacts (coverage reports, mutation reports). Defaults to ./test-results.
 
+.PARAMETER MutationThreshold
+    Minimum mutation score (percentage) that makes the run fail in Full/Mutation stages. Defaults to 60.
+
 .EXAMPLE
     .\run-tests.ps1 -Stage Smoke
     Runs smoke tests only (~30s).
@@ -55,7 +58,10 @@ param(
     [string]$Project = "",
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputDir = "./test-results"
+    [string]$OutputDir = "./test-results",
+
+    [Parameter(Mandatory = $false)]
+    [int]$MutationThreshold = 60
 )
 
 $ErrorActionPreference = "Stop"
@@ -133,7 +139,7 @@ switch ($Stage) {
     "Smoke" {
         Write-StageHeader "Smoke" "Quick health check (~30s) — every commit"
         $start = Get-Date
-        $result = dotnet test $testProject --filter "Category=Smoke" --logger "console;verbosity=detailed" --results-directory $OutputDir
+        dotnet test $testProject --filter "Category=Smoke" --logger "console;verbosity=detailed" --results-directory $OutputDir
         $success = $LASTEXITCODE -eq 0
         $duration = ((Get-Date) - $start).ToString("mm\:ss")
         Write-StageResult "Smoke" $success $duration
@@ -143,7 +149,7 @@ switch ($Stage) {
     "Regression" {
         Write-StageHeader "Regression" "Full functional validation (~5min) — every PR"
         $start = Get-Date
-        $result = dotnet test $testProject --filter "Category!=Security&Category!=Performance" --logger "console;verbosity=detailed" --results-directory $OutputDir
+        dotnet test $testProject --filter "Category!=Security&Category!=Performance" --logger "console;verbosity=detailed" --results-directory $OutputDir
         $success = $LASTEXITCODE -eq 0
         $duration = ((Get-Date) - $start).ToString("mm\:ss")
         Write-StageResult "Regression" $success $duration
@@ -162,11 +168,11 @@ switch ($Stage) {
         Write-StageResult "All Tests" $success $duration
         if (-not $success) { $overallSuccess = $false }
 
-        # Step 2: Mutation testing
+        # Step 2: Mutation testing (fails if score < MutationThreshold)
         Write-Host "  [2/2] Running mutation testing..." -ForegroundColor Gray
         Ensure-Tool "dotnet-stryker"
         $start = Get-Date
-        dotnet stryker --output-path "$OutputDir/mutation-report"
+        dotnet stryker --output-path "$OutputDir/mutation-report" --break-at $MutationThreshold
         $mutationSuccess = $LASTEXITCODE -eq 0
         $duration = ((Get-Date) - $start).ToString("mm\:ss")
         Write-StageResult "Mutation Testing" $mutationSuccess $duration
@@ -196,10 +202,10 @@ switch ($Stage) {
     }
 
     "Mutation" {
-        Write-StageHeader "Mutation" "Run mutation testing only"
+        Write-StageHeader "Mutation" "Run mutation testing only (fails if score < $MutationThreshold%)"
         Ensure-Tool "dotnet-stryker"
         $start = Get-Date
-        dotnet stryker --output-path "$OutputDir/mutation-report"
+        dotnet stryker --output-path "$OutputDir/mutation-report" --break-at $MutationThreshold
         $success = $LASTEXITCODE -eq 0
         $duration = ((Get-Date) - $start).ToString("mm\:ss")
         Write-StageResult "Mutation" $success $duration

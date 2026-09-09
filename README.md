@@ -34,17 +34,22 @@ The skill defines **11 phases** organized as a quality pyramid:
 
 ## Installation
 
-This skill is designed to be installed as an agent skill. Place the `quality-assurance-4all/` folder in your skills directory:
+This skill is designed to be installed as an agent skill. Copy the `quality-assurance-4all/` folder
+into your agent's skills directory:
 
-```
-~/.agents/skills/quality-assurance-4all/
-```
+| Agent | Directory |
+|-------|-----------|
+| Claude Code | `~/.claude/skills/quality-assurance-4all/` (user-wide) or `.claude/skills/` (project-scoped) |
+| Devin | `~/.agents/skills/quality-assurance-4all/` |
 
 Or install from the source repository:
 
 ```bash
 devin skill install https://github.com/4all-lat/quality-assurance-4all
 ```
+
+Once present under `~/.claude/skills/`, Claude Code discovers the skill automatically and exposes it
+as `/quality-assurance-4all`.
 
 ## Usage
 
@@ -58,11 +63,23 @@ Use the quality-assurance-4all skill to set up QA for this project.
 
 For a new .NET project, run the setup script to scaffold the test project structure:
 
+```bash
+./scripts/setup-qa-project.sh --name MyProject.Tests --stack dotnet
+```
+
 ```powershell
 .\scripts\setup-qa-project.ps1 -ProjectName "MyProject.Tests" -Stack dotnet
 ```
 
-For the stratified test runner:
+For the stratified test runner (cross-platform bash, or PowerShell on Windows):
+
+```bash
+./scripts/run-tests.sh -s Smoke       # Quick health check (~30s)
+./scripts/run-tests.sh -s Regression  # Full functional validation (~5min)
+./scripts/run-tests.sh -s Full        # Everything including perf + security (~15min)
+./scripts/run-tests.sh -s Coverage    # Generate coverage report
+./scripts/run-tests.sh -s Mutation    # Run mutation testing
+```
 
 ```powershell
 .\scripts\run-tests.ps1 -Stage Smoke       # Quick health check (~30s)
@@ -83,14 +100,19 @@ quality-assurance-4all/
     owasp-api-testing.md    # Detailed OWASP API Top 10 testing guide
     tools-by-stack.md       # Frameworks and tools by stack (.NET, Node.js, Python)
     test-pyramid.md         # Test pyramid and stratification deep dive
+    contract-testing.md     # Contract testing (Pact + OpenAPI schema)
+    performance-testing.md  # Performance testing with code examples
+    quality-engineering-practices.md # Flaky, test data, a11y, visual regression, DoD
   assets/               # Reusable templates and config snippets
     ai-spec-template.md     # AI Spec / Feature Spec template
     bdd-feature-template.feature  # Gherkin BDD scenario template
     pre-production-checklist.md   # Pre-production quality checklist
     coverage-config.xml     # Coverlet coverage configuration snippet
   scripts/              # Working scripts for CI and project setup
-    run-tests.ps1           # Stratified test runner (Smoke/Regression/Full)
-    setup-qa-project.ps1    # Quick-start QA project scaffolder
+    run-tests.sh            # Stratified test runner (bash, cross-platform)
+    run-tests.ps1           # Stratified test runner (PowerShell)
+    setup-qa-project.sh     # Quick-start QA scaffolder (bash, cross-platform)
+    setup-qa-project.ps1    # Quick-start QA project scaffolder (PowerShell)
     README.md               # Scripts documentation
 ```
 
@@ -99,7 +121,7 @@ quality-assurance-4all/
 | Stack | Unit | BDD | Property-Based | Coverage | Mutation |
 |-------|------|-----|-----------------|----------|----------|
 | .NET | xUnit / NUnit | Reqnroll | FsCheck | Coverlet | Stryker.NET |
-| Node.js/TS | Vitest / Jest | Cucumber.js | fast-check | c8 / istanbul | Stryker.js |
+| Node.js/TS | Vitest / Jest | Cucumber.js | fast-check | @vitest/coverage-v8 / istanbul | Stryker.js |
 | Python | pytest | Behave | Hypothesis | coverage.py | mutmut / cosmic-ray |
 
 ## Quality Pyramid

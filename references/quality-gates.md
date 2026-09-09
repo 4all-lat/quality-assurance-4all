@@ -125,7 +125,7 @@ See `owasp-api-testing.md` for detailed test implementations.
 > **Gate:** Line coverage >= 80%. Build fails if coverage drops below threshold.
 
 **Checklist:**
-- [ ] Coverage tool configured (Coverlet / c8 / coverage.py)
+- [ ] Coverage tool configured (Coverlet / @vitest/coverage-v8 / coverage.py)
 - [ ] Threshold set to 80% line coverage
 - [ ] Migrations and test projects excluded from coverage
 - [ ] Coverage report generated (HTML / Cobertura)
@@ -172,7 +172,7 @@ See `owasp-api-testing.md` for detailed test implementations.
 - [ ] CI pipeline runs Smoke on every commit
 - [ ] CI pipeline runs Regression on every PR
 - [ ] Nightly/pre-release pipeline runs Full suite
-- [ ] `run-tests.ps1` script configured with `-Stage` parameter
+- [ ] `run-tests.sh` / `run-tests.ps1` script configured with the stage parameter
 
 ---
 
@@ -180,36 +180,12 @@ See `owasp-api-testing.md` for detailed test implementations.
 
 > **Gate:** All pre-production checklist items checked. Post-deployment validation passes.
 
-**Pre-production checklist:**
-- [ ] Spec approved by product owner and architect
-- [ ] Unit tests pass with >= 80% coverage
-- [ ] BDD scenarios pass for all acceptance criteria
-- [ ] Integration tests pass for all endpoint x tenant combinations
-- [ ] Property-based tests pass with 200+ random cases
-- [ ] Security tests pass (OWASP API Top 10)
-- [ ] Performance tests meet P95 latency targets
-- [ ] Mutation score >= 60%
-- [ ] No surviving high-severity mutations in critical paths
-- [ ] Code review approved by at least one peer
-- [ ] No secrets in code (API keys, passwords, connection strings)
-- [ ] Error responses do not contain stack traces
-- [ ] Swagger/OpenAPI documentation is complete and accurate
-- [ ] Rate limiting is configured and tested
-- [ ] Logging is configured (no sensitive data logged)
-- [ ] CORS is configured correctly (not `AllowAll` in production)
-- [ ] JWT expiration is set appropriately
-- [ ] Database migrations are reversible
-- [ ] Rollback plan is documented and tested
+**Pre-production checklist & post-deployment validation:**
+See [`assets/pre-production-checklist.md`](../assets/pre-production-checklist.md) — the sign-off-ready
+checklist covering tests, security, configuration, database, deployment & rollback, monitoring, and
+post-deployment validation. Use it as the single operational source at release time.
 
-**Post-deployment validation:**
-- [ ] Smoke tests run against production endpoint immediately after deploy
-- [ ] Error rate monitored for 15 minutes post-deploy
-- [ ] Latency P95 monitored for 15 minutes post-deploy
-- [ ] Health endpoint returns healthy
-- [ ] Swagger accessible (if applicable)
-- [ ] Rollback plan ready — if any metric degrades, rollback within 5 minutes
-
-**Production monitoring SLOs:**
+**Production monitoring SLOs (single source):**
 
 | SLO | Target | Alert threshold |
 |-----|--------|-----------------|
