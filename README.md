@@ -1,6 +1,6 @@
 # Quality Assurance 4All Skill
 
-End-to-end QA pipeline guide from spec to production. Covers TDD, BDD, SDD, property-based testing, mutation testing, security testing, performance testing, code coverage, and regression suite stratification.
+End-to-end QA pipeline guide from spec to production. Covers TDD, BDD, SDD, threat modeling and abuse cases, property-based testing, mutation testing, security testing (dynamic and static scanning), concurrency and idempotency testing, accessibility and visual regression, performance testing, code coverage, and regression suite stratification with enforced tier budgets.
 
 ## What This Skill Provides
 
@@ -15,8 +15,8 @@ The skill defines **11 phases** organized as a quality pyramid:
 | 3. Behavior | BDD (Behavior-Driven Development) | All acceptance criteria covered |
 | 4. Integration | Test Pyramid (70/20/10) | All endpoints x tenants tested |
 | 5. Edge Cases | Property-Based Testing | 200+ random cases per property |
-| 6. Security | OWASP API Top 10 | All 10 risks tested |
-| 7. Performance | Load Testing | P95 < target, < 0.1% errors |
+| 6. Security | OWASP API Top 10 + static scans | All 10 risks tested; scans clean |
+| 7. Performance | Load Testing | P95 < 2000ms, error rate < 0.1% |
 | 8. Coverage | Code Coverage | >= 80% line coverage |
 | 9. Mutation | Mutation Testing | >= 60% mutation score |
 | 10. Regression | Stratified Suite (Smoke/Regression/Full) | Tiered pass gates |
@@ -102,6 +102,7 @@ quality-assurance-4all/
     test-pyramid.md         # Test pyramid and stratification deep dive
     contract-testing.md     # Contract testing (Pact + OpenAPI schema)
     performance-testing.md  # Performance testing with code examples
+    concurrency-and-idempotency.md # Races, retries, double submit, replay, keyset paging
     quality-engineering-practices.md # Flaky, test data, a11y, visual regression, DoD
   assets/               # Reusable templates and config snippets
     ai-spec-template.md     # AI Spec / Feature Spec template
@@ -110,11 +111,34 @@ quality-assurance-4all/
     coverage-config.xml     # Coverlet coverage configuration snippet
   scripts/              # Working scripts for CI and project setup
     run-tests.sh            # Stratified test runner (bash, cross-platform)
-    run-tests.ps1           # Stratified test runner (PowerShell)
+    run-tests.ps1           # Stratified test runner (PowerShell, .NET-only)
     setup-qa-project.sh     # Quick-start QA scaffolder (bash, cross-platform)
     setup-qa-project.ps1    # Quick-start QA project scaffolder (PowerShell)
     README.md               # Scripts documentation
+  tests/                # This repository's own test suite (zero dependencies)
+    run.sh                  # Discovers cases/*.test.sh and runs them
+    cases/                  # One file per behaviour under test
+    README.md               # How the suite works
+  .github/workflows/qa.yml  # CI: smoke, regression and Windows parity jobs
 ```
+
+## Testing This Repository
+
+The scripts in `scripts/` are what every adopting project runs as its gate, so
+they are covered by their own suite. It needs nothing installed — the external
+toolchains are replaced by PATH shims — and it runs the same way locally and in
+CI:
+
+```bash
+tests/run.sh                 # every case
+tests/run.sh parity          # only the bash <-> PowerShell parity contract
+```
+
+It pins down the runner's exit-code contract (`0` success · `1` gate failure ·
+`2` usage error), the exact command line each stack and stage produces, the
+scaffolder's generated tree, the documented thresholds (a single canonical table
+in `references/quality-gates.md`), and the bash/PowerShell parity of stages,
+flags and thresholds. See [`tests/README.md`](tests/README.md).
 
 ## Stacks Supported
 
@@ -123,6 +147,9 @@ quality-assurance-4all/
 | .NET | xUnit / NUnit | Reqnroll | FsCheck | Coverlet | Stryker.NET |
 | Node.js/TS | Vitest / Jest | Cucumber.js | fast-check | @vitest/coverage-v8 / istanbul | Stryker.js |
 | Python | pytest | Behave | Hypothesis | coverage.py | mutmut / cosmic-ray |
+
+Concurrency, security scanning and UI quality (accessibility, visual regression) are documented per
+stack in [`references/tools-by-stack.md`](references/tools-by-stack.md).
 
 ## Quality Pyramid
 
@@ -149,8 +176,12 @@ Each layer depends on the one below. You cannot have reliable integration tests 
 | Tier | Category | Duration | When to run | What's included |
 |------|----------|----------|-------------|-----------------|
 | Smoke | `Smoke` | ~30s | Every commit | Health, swagger, auth login |
-| Regression | `Regression` | ~5min | Every PR | All functional tests (unit + BDD + integration) |
-| Full | `Full` | ~15min | Nightly / pre-release | + security + performance + mutation |
+| Regression | `Regression` | ~5min | Every PR | All functional tests (unit + BDD + integration + concurrency) + the `SecurityPR` subset |
+| Full | `Full` | ~15min | Nightly / pre-release | + the full security suite, the static scans, performance and mutation |
+
+The durations are enforced by the runners (`--enforce-budget` / `-EnforceBudget`), not merely
+documented. `SecurityPR` is the BOLA / authentication / injection subset that cannot wait for the
+nightly run; the selection criterion is in [`references/test-pyramid.md`](references/test-pyramid.md).
 
 ## License
 

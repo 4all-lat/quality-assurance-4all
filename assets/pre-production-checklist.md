@@ -7,6 +7,8 @@
 
 - [ ] **Spec approved** by product owner and architect
 - [ ] **Acceptance criteria** are all met and verified
+- [ ] **Abuse cases recorded** — the spec names the realistic ways this change can be abused
+- [ ] **Threat model walked** (STRIDE or equivalent) and its mitigations are implemented, or the residual risk is accepted in writing
 - [ ] **Code review** approved by at least one peer
 - [ ] **Open questions** from spec are all resolved
 
@@ -34,6 +36,35 @@
 - [ ] **Swagger visibility tested** (endpoint appears in OpenAPI spec)
 - [ ] **Rate limiting tested** (429 when exceeded)
 
+## Concurrency & Idempotency
+
+Full guide: [`references/concurrency-and-idempotency.md`](../references/concurrency-and-idempotency.md).
+
+- [ ] **Retry with an idempotency key** produces one effect and replays the first response
+- [ ] **Same key, different body** is rejected (409) rather than silently applied a second time
+- [ ] **Double submit** — simultaneous identical requests create exactly one record
+- [ ] **Concurrent edits** — a stale write is rejected with a conflict, not silently overwritten
+- [ ] **Check-then-act flows** (stock, balance, quota) hold their invariant under concurrent access
+- [ ] **Signed webhooks** cannot be replayed — same body, or outside the timestamp window
+- [ ] **Pagination during concurrent inserts** serves no row twice and skips none
+- [ ] **Against the real database engine** — not an in-memory provider, which hides the race
+- [ ] **Uniqueness constraints** back every rule the application also checks in code
+
+## UI Quality
+
+Only when the deliverable has a user interface. Practices and tooling:
+[`references/quality-engineering-practices.md`](../references/quality-engineering-practices.md).
+
+- [ ] **Automated accessibility audit passes** — axe / Lighthouse / Pa11y, with no new violations
+- [ ] **Manual pass done** — keyboard-only navigation and one screen reader run over the changed flows
+- [ ] **Every interactive element** is reachable by keyboard, has an accessible name, and shows visible focus
+- [ ] **Semantic structure** — headings in order, landmarks present, form fields labelled with errors associated
+- [ ] **Colour contrast** meets WCAG AA (4.5:1 for text)
+- [ ] **Visual regression run** — every changed screen captured and compared
+- [ ] **Visual differences reviewed and approved**, not mass-accepted
+- [ ] **Responsive breakpoints verified** at phone, tablet and desktop widths
+- [ ] **No console errors** in the browser during the critical flows
+
 ## Property-Based Tests
 
 - [ ] **All normalization/calculation functions have property tests**
@@ -43,7 +74,13 @@
 ## Security Tests
 
 - [ ] **API1: BOLA** — cross-tenant access returns 403
-- [ ] **API2: Broken Auth** — invalid/expired JWT -> 401, invalid API key -> 401
+- [ ] **API2: Broken Auth** — invalid/malformed/expired JWT -> 401, invalid API key -> 401
+- [ ] **API2: Session expiry** — a token that expires *during* a session is rejected on the next call
+- [ ] **API2: Refresh rotation** — refresh tokens rotate, and replaying a rotated one is detected and revokes the family
+- [ ] **API2: Revocation** — logout revokes the refresh token server-side; the old value stops working
+- [ ] **API2: Password change** — every token issued before a password change is invalidated
+- [ ] **API2: Algorithm confusion** — `alg=none` is rejected, and a token signed with the public key does not validate
+- [ ] **API2: Signature and `kid`** — a tampered signature is rejected, and `kid` injection cannot select a key the caller supplies
 - [ ] **API3: Property Level Auth** — mass assignment not possible
 - [ ] **API4: Resource Consumption** — rate limiting returns 429
 - [ ] **API5: Function Level Auth** — non-admin cannot access admin endpoints
@@ -56,6 +93,20 @@
 - [ ] **XSS** — `<script>` in params -> JSON response, not HTML
 - [ ] **Path Traversal** — `../../../etc/passwd` -> 404
 - [ ] **HTTP Method Security** — POST/DELETE on GET-only endpoint -> 405
+
+## Security Scanning (Non-Intrusive)
+
+These four scans read source, manifests and history — they need nothing deployed, so they run on
+every PR rather than at release only. The checklist records their state at sign-off.
+
+- [ ] **Dependency scan clean** — no `high` or `critical` advisory in direct or transitive dependencies
+- [ ] **Dependency scan uses transitive resolution** (`--include-transitive` / `--audit-level=high` / `pip-audit`)
+- [ ] **Secret scan clean on the diff** — no credential in this changeset
+- [ ] **Secret scan clean on the full history** — no credential was ever committed
+- [ ] **SAST clean at `high`/`critical`** — every surviving finding has a dated waiver and an owner
+- [ ] **SBOM generated for this release** and attached to the release artifact
+- [ ] **Container image scanned**, if the service ships in a container
+- [ ] **`Medium` findings triaged** — each has an owner and a date, or a written acceptance
 
 ## Performance Tests
 
@@ -79,6 +130,18 @@
 - [ ] **Mutation score >= 60%** (>= 80% for critical systems)
 - [ ] **No surviving high-severity mutations** in critical paths
 - [ ] **Mutation report reviewed**
+
+## Test Suite Health
+
+The suite is a gate only while it is fast and trustworthy. A tier that quietly grows past its
+budget gets skipped by developers, and a suite that fails intermittently gets ignored — both turn
+the pipeline back into decoration.
+
+- [ ] **Tier budgets respected** — Smoke < 30s, Regression < 5min, Full < 15min
+- [ ] **Budgets enforced in CI** — the runner is invoked with `--enforce-budget`, so an overrun fails the build rather than printing a number nobody reads
+- [ ] **No flaky tests** — anything that failed intermittently in the last cycle is fixed or quarantined with an owner and a date
+- [ ] **No skipped or ignored tests** without a documented reason
+- [ ] **The suite is deterministic** — the same commit produces the same result on a rerun
 
 ## Security & Configuration
 
@@ -114,7 +177,7 @@
 - [ ] **Health checks** endpoint with DB connectivity check
 - [ ] **Alerts configured** for:
   - [ ] Availability < 99.5% for 5 min
-  - [ ] P95 latency > 5s for 5 min
+  - [ ] P95 latency > 5000ms for 5 min
   - [ ] Error rate > 1% for 5 min
   - [ ] Rate limit hits > 10% for 10 min
 - [ ] **Dashboard** created for key metrics

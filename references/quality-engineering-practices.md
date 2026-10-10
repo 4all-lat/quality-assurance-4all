@@ -120,25 +120,31 @@ Use the checklist below alongside the automated gates to catch what tests can't.
 - [ ] Public API/DTO changes are reflected in OpenAPI docs and consumers
 - [ ] Migrations are reversible and tested against a copy of staging data
 - [ ] Performance-sensitive paths have a baseline or a marked performance test
+- [ ] New trust boundaries have abuse cases and a threat-model note in the spec
+- [ ] State-changing endpoints have a concurrency test alongside their functional test
 
 ## 6. Definition of Done (DoD)
 
 A single DoD makes "done" unambiguous across the team. Adapt thresholds to the project.
 
 **Every user story / change is done when:**
-- [ ] Spec section for the change is updated and reviewed
+- [ ] Spec section for the change is updated and reviewed, abuse cases included
 - [ ] Unit tests pass with coverage on the new code (≥ 80% line, project threshold)
 - [ ] BDD scenarios added/updated for acceptance criteria and passing
 - [ ] Integration/contract tests added for new boundaries (new endpoints × tenants)
+- [ ] State-changing endpoints exercised twice and concurrently, with exactly one effect
 - [ ] Security tests cover new endpoints (auth, authz, injection, no stack traces)
+- [ ] The dependency, secret and SAST scans are clean for the change
 - [ ] Mutation score threshold met on the changed area
 - [ ] Feature is smoke-tested against a real environment, not just in-memory
 - [ ] No flaky-test quarantine added, and existing quarantined tests are green
+- [ ] The tier the change lands in still passes within its budget
 - [ ] Documentation/OpenAPI updated
 - [ ] Rollback plan confirmed for the release
 
 ## Quality gate
 
-> **No test is left flaky or silently skipped. Every feature ships with deterministic, isolated test
-> data. Primary UI routes pass a11y checks. Visual baselines are reviewed in every PR. The DoD
-> checklist is the gate for closing a work item.**
+> **No test is left flaky or silently skipped, and no tier overruns its budget. Every feature ships with
+> deterministic, isolated test data. New trust boundaries have walked abuse cases. Primary UI routes
+> pass a11y checks. Visual baselines are reviewed in every PR. The DoD checklist is the gate for closing
+> a work item.**

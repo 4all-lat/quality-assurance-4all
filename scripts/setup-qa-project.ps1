@@ -95,7 +95,7 @@ switch ($Stack) {
         }
 
         Write-Host "[4/4] Creating folder structure..." -ForegroundColor Yellow
-        $folders = @("Features", "Integration", "Security", "Performance", "PropertyBased", "Controllers", "Services", "Repositories")
+        $folders = @("Features", "Integration", "Concurrency", "Security", "Performance", "PropertyBased", "Controllers", "Services", "Repositories")
         foreach ($folder in $folders) {
             $folderPath = Join-Path $projectPath $folder
             New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
@@ -157,7 +157,7 @@ export default defineConfig({
         Set-Content -Path "vitest.config.ts" -Value $vitestConfig
 
         Write-Host "[4/4] Creating folder structure..." -ForegroundColor Yellow
-        $folders = @("features", "integration", "security", "performance", "property-based", "unit")
+        $folders = @("features", "integration", "concurrency", "security", "performance", "property-based", "unit")
         foreach ($folder in $folders) {
             $folderPath = Join-Path $projectPath $folder
             New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
@@ -192,7 +192,9 @@ locust>=2.0
         Set-Content -Path "requirements.txt" -Value $requirements
 
         Write-Host "[2/4] Installing QA packages..." -ForegroundColor Yellow
-        python -m pip install -r requirements.txt 2>$null
+        # Prefer python3 (macOS/Linux); fall back to python
+        $python = if (Get-Command python3 -ErrorAction SilentlyContinue) { "python3" } else { "python" }
+        & $python -m pip install -r requirements.txt
 
         Write-Host "[3/4] Creating .coveragerc..." -ForegroundColor Yellow
         $coveragerc = @"
@@ -213,7 +215,7 @@ directory = coverage_html_report
         Set-Content -Path ".coveragerc" -Value $coveragerc
 
         Write-Host "[4/4] Creating folder structure..." -ForegroundColor Yellow
-        $folders = @("features", "integration", "security", "performance", "property_based", "unit")
+        $folders = @("features", "integration", "concurrency", "security", "performance", "property_based", "unit")
         foreach ($folder in $folders) {
             $folderPath = Join-Path $projectPath $folder
             New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
@@ -228,7 +230,9 @@ directory = coverage_html_report
 markers =
     smoke: quick health check tests (run on every commit)
     regression: functional tests (run on every PR)
+    concurrency: races, retries and double-submit tests (run on every PR)
     security: security tests (OWASP API Top 10)
+    securitypr: BOLA/auth/injection subset that runs on every PR
     performance: performance/load tests
     property: property-based tests
 "@
@@ -251,6 +255,7 @@ Write-Host @"
   $ProjectName/
     Features/          # BDD .feature files (Gherkin)
     Integration/       # In-memory + live integration tests
+    Concurrency/       # Races, retries, idempotency (Regression tier)
     Security/          # OWASP security tests
     Performance/       # Load and latency tests
     PropertyBased/     # Property-based / generative tests

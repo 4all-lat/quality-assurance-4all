@@ -1,7 +1,7 @@
 ---
 name: quality-assurance-4all
 version: 2.0.0
-description: End-to-end QA pipeline from spec to production for any stack (.NET, Node.js, Python). Quality gates for TDD, BDD, SDD, unit + integration + contract testing, code coverage, property-based testing, security (OWASP API Top 10), performance, mutation testing, and regression suite stratification. Use when setting up QA for a new project, establishing team QA standards, auditing test coverage, defining a CI/CD quality pipeline, or preparing a solution for production release.
+description: End-to-end QA pipeline from spec to production for any stack (.NET, Node.js, Python). Quality gates for TDD, BDD, SDD, threat modeling and abuse cases, unit + integration + contract testing, code coverage, property-based testing, concurrency and idempotency, security (OWASP API Top 10 + dependency/secret/SAST scanning and SBOM), performance, mutation testing, accessibility and visual regression, and regression suite stratification with enforced tier budgets. Use when setting up QA for a new project, establishing team QA standards, auditing test coverage, defining a CI/CD quality pipeline, or preparing a solution for production release.
 ---
 
 # Quality Assurance Pipeline — From Spec to Production
@@ -89,6 +89,7 @@ The spec is the single source of truth. Everything — code, tests, documentatio
    - Functional requirement (business context, expected behavior, acceptance criteria)
    - Technical contract (API endpoints, DTOs, DB tables, data flow)
    - Edge cases matrix (test scenarios, expected results, error handling)
+   - Abuse cases and a threat model (STRIDE over every new trust boundary)
    - Open questions and blocking points
 
 2. **Version the spec** in the repository alongside the code.
@@ -118,13 +119,14 @@ The spec is the single source of truth. Everything — code, tests, documentatio
 ## 3. Pre-Analysis
 - DB tables, SPs, legacy services affected
 
-## 4. Technical Contract
+## 4. Technical Input / Output Contract
 - API endpoints, DTOs, files to modify
 
 ## 5. Edge Cases & Test Matrix
 | Scenario | Input | Expected | Error Handling |
+- Abuse Cases & Threat Model (STRIDE per trust boundary, residual risks recorded)
 
-## 6. Open Questions & Blockers
+## 6. Open Questions & Blocking Points
 - Pending decisions, risks
 
 ## 7. QA Notes (optional)
@@ -133,7 +135,7 @@ The spec is the single source of truth. Everything — code, tests, documentatio
 
 ### Quality gate
 
-> **No code is written until the spec is reviewed and approved.**
+> **No code is written until the spec is reviewed and approved, and its abuse cases are walked.**
 
 ---
 
@@ -249,9 +251,27 @@ Tests that validate the system works correctly when all components are wired tog
 - Swagger visibility (endpoint appears in OpenAPI spec)
 - Rate limiting (429 when exceeded)
 
+### Concurrency and idempotency
+
+Everything above fires one request at a time. Production does not. A client that retries a timed-out
+call, a user who double-clicks, a broker that delivers the same event twice — each is a way for one
+intention to become two effects. Test it at the integration level, against the real database engine
+(an in-memory provider hides unique constraints and locks):
+
+1. **Retry with an idempotency key** — same key + same body → one effect, the first response replayed.
+2. **Double submit** — simultaneous identical requests → exactly one record, the rest `409`.
+3. **Two updates to one row** — the stale write gets a conflict, not a silent overwrite.
+4. **TOCTOU** — stock/balance/quota checks hold their invariant when ten callers race.
+5. **Webhook replay** — a captured signed payload cannot be delivered twice or after the window.
+6. **Paging during inserts** — a keyset cursor, so no row is served twice or skipped.
+
+Tag these `Concurrency` so the `Regression` tier runs them on every PR. Full guide, with the test
+code for each: [`references/concurrency-and-idempotency.md`](references/concurrency-and-idempotency.md).
+
 ### Quality gate
 
-> **All endpoints × all tenants matrix is tested. Data isolation is verified by content, not just status codes.**
+> **All endpoints × all tenants matrix is tested. Data isolation is verified by content, not just
+> status codes. Every state-changing endpoint is fired twice and concurrently, with exactly one effect.**
 
 ---
 
@@ -300,7 +320,7 @@ Tests that validate the API is secure against the OWASP API Security Top 10 risk
 | # | Risk | Test |
 |---|------|------|
 | API1 | Broken Object Level Authorization | Cross-tenant access returns 403 |
-| API2 | Broken Authentication | Invalid/expired JWT → 401, invalid API key → 401 |
+| API2 | Broken Authentication | Invalid/expired JWT → 401, invalid API key → 401; full token lifecycle (expiry mid-session, refresh rotation, revocation, `alg=none`) |
 | API3 | Broken Object Property Level Authorization | Mass assignment not possible |
 | API4 | Unrestricted Resource Consumption | Rate limiting returns 429 |
 | API5 | Broken Function Level Authorization | Non-admin cannot access admin endpoints |
@@ -317,9 +337,28 @@ Tests that validate the API is secure against the OWASP API Security Top 10 risk
 - **Path Traversal**: send `../../../etc/passwd` → must return 404
 - **HTTP Method Security**: POST/DELETE on GET-only endpoint → 405
 
+### Non-intrusive security scanning
+
+The tests above need a running system, so only the nightly tier can afford them. Four scans need
+nothing deployed and therefore run on **every PR** — a vulnerable dependency or a leaked key is
+committed once and stays in the history.
+
+| Scan | Fails the build on | .NET | Node.js/TS | Python |
+|------|--------------------|------|-----------|--------|
+| Dependencies | any `high`/`critical` advisory | `dotnet list package --vulnerable --include-transitive` | `npm audit --audit-level=high` | `pip-audit` |
+| Secrets | any hit, in the diff and in the history | Gitleaks / TruffleHog | Gitleaks / TruffleHog | Gitleaks / TruffleHog |
+| SAST | any `high`/`critical` finding | Roslyn analyzers | `eslint-plugin-security` | `bandit` |
+| SBOM | missing or unattached release artifact | `dotnet CycloneDX` | `npm sbom` | `cyclonedx-py` |
+
+Run the tests above in the `Full` tier; run these scans in `Regression`, so the PR that introduces
+the problem is the one that fails. Exact command lines are in
+[`references/tools-by-stack.md`](references/tools-by-stack.md); the gate wording is in
+[`references/quality-gates.md`](references/quality-gates.md) (Phase 6).
+
 ### Quality gate
 
-> **All OWASP API Top 10 risks are tested. SQL injection does not execute. No stack traces in error responses.**
+> **All OWASP API Top 10 risks are tested. SQL injection does not execute. No stack traces in error
+> responses. No `high`/`critical` finding survives the dependency, secret, SAST or SBOM scan.**
 
 ---
 
@@ -431,8 +470,15 @@ Organize tests into tiers that run at different speeds and frequencies.
 | Tier | Category | Duration | When to run | What's included |
 |------|----------|----------|-------------|-----------------|
 | Smoke | `Smoke` | ~30s | Every commit | Health, swagger, auth login |
-| Regression | `Regression` | ~5min | Every PR | All functional tests (unit + BDD + integration) |
-| Full | `Full` | ~15min | Nightly / pre-release | + security + performance + mutation |
+| Regression | `Regression` | ~5min | Every PR | All functional tests (unit + BDD + integration + concurrency) + the `SecurityPR` subset |
+| Full | `Full` | ~15min | Nightly / pre-release | + the full security suite, the static scans, performance and mutation |
+
+`SecurityPR` is the BOLA / authentication / injection subset of the security suite: cheap,
+deterministic, and a release blocker if it regresses, so it runs on every PR rather than waiting for
+the nightly run. The selection criterion is in [`references/test-pyramid.md`](references/test-pyramid.md).
+
+The durations are enforced, not aspirational: `run-tests.sh --enforce-budget` (or
+`run-tests.ps1 -EnforceBudget`) fails the stage when it overruns its tier budget.
 
 ### CI Pipeline script
 
@@ -481,12 +527,13 @@ checked before production release. Consolidated quality gates for all 11 phases 
 | **API Gateway** | Rate limiting, request validation, IP allowlisting | Medium |
 | **WAF** | Web Application Firewall (Azure Front Door, Cloudflare) | Medium |
 | **DAST scanning** | OWASP ZAP, Burp Suite (dynamic security testing) | Medium |
-| **Dependency scanning** | Dependabot, Snyk, Trivy (supply chain security) | Medium |
-| **Container scanning** | Trivy, Grype (if using Docker) | Medium |
-| **SAST scanning** | SonarQube, Roslyn analyzers (static analysis) | Medium |
+| **Container scanning** | Trivy, Grype (a blocking gate in Phase 6 if the service ships in Docker) | Medium |
 | **Contract testing** | Pact (consumer-driven contract testing) | Low |
 | **Chaos engineering** | Chaos Mesh, Gremlin (resilience testing) | Low |
 | **Canary deployments** | Flagger, Argo Rollouts (progressive delivery) | Low |
+
+Dependency, secret and SAST scanning are **not** on this optional list: they are blocking gates of
+Phase 6, run on every PR. See [Non-intrusive security scanning](#non-intrusive-security-scanning).
 
 ### Production monitoring SLOs
 
@@ -508,16 +555,16 @@ SLO targets and alert thresholds are consolidated in
 
 | Phase | Methodology | Quality Gate | Tool Example |
 |-------|-------------|--------------|--------------|
-| 1. Specification | SDD | Spec approved before coding | AI Spec document |
+| 1. Specification | SDD | Spec approved before coding; abuse cases walked | AI Spec document |
 | 2. Unit | TDD | ≥ 80% coverage | xUnit + Moq + Coverlet |
 | 3. Behavior | BDD | All acceptance criteria covered | Reqnroll + Gherkin |
-| 4. Integration | Test Pyramid | All endpoints × tenants tested | Playwright + WebApplicationFactory |
+| 4. Integration | Test Pyramid | All endpoints × tenants tested; one effect under concurrency | Playwright + WebApplicationFactory + Testcontainers |
 | 5. Edge cases | Property-Based | 200+ random cases per property | FsCheck |
-| 6. Security | OWASP API Top 10 | All 10 risks tested | Custom + Playwright |
-| 7. Performance | Load Testing | P95 < target, 0% errors | HttpClient concurrent / NBomber |
+| 6. Security | OWASP API Top 10 + static scans | All 10 risks tested; scans clean | Custom + Playwright + SCA/SAST/secret scanners |
+| 7. Performance | Load Testing | P95 < 2000ms, error rate < 0.1% | HttpClient concurrent / NBomber |
 | 8. Coverage | Code Coverage | ≥ 80% line coverage | Coverlet + ReportGenerator |
 | 9. Mutation | Mutation Testing | ≥ 60% mutation score | Stryker.NET |
-| 10. Regression | Stratified Suite | Smoke/Regression/Full pass | NUnit Categories + CI script |
+| 10. Regression | Stratified Suite | Smoke/Regression/Full pass within budget | NUnit Categories + CI script |
 | 11. Production | Pre-prod checklist | All items checked | Manual + automated |
 
 ---
@@ -595,6 +642,7 @@ Detailed deep-dive documentation for each topic:
 | `references/test-pyramid.md` | Test pyramid, regression stratification, and CI pipeline integration deep dive |
 | `references/contract-testing.md` | Contract testing (Pact + OpenAPI schema), consumer/provider workflow |
 | `references/performance-testing.md` | Performance testing with code examples (HttpClient, NBomber, k6, locust) |
+| `references/concurrency-and-idempotency.md` | Races, retries, double submit, TOCTOU, webhook replay, keyset pagination |
 | `references/quality-engineering-practices.md` | Flaky tests, test data, a11y, visual regression, code review checklist, Definition of Done |
 
 ### assets/

@@ -1,0 +1,16 @@
+# Test artifacts written by scripts/run-tests.sh
+test-results/
+
+# macOS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Node (a scaffolder run inside this repo would create node_modules/)
+node_modules/
+
+# Note: .archify/ and diagrams/ are deliberately NOT ignored. They hold the
+# generated diagrams, which are deliverables rather than build output.

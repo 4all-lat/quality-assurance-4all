@@ -24,6 +24,10 @@
 .PARAMETER MutationThreshold
     Minimum mutation score (percentage) that makes the run fail in Full/Mutation stages. Defaults to 60.
 
+.PARAMETER EnforceBudget
+    Fail the run when the stage overruns its tier budget (Smoke 30s, Regression 5min, Full 15min).
+    Without it an overrun is reported as a warning. QA_TIER_BUDGET=<seconds> overrides the budget.
+
 .EXAMPLE
     .\run-tests.ps1 -Stage Smoke
     Runs smoke tests only (~30s).
@@ -61,7 +65,10 @@ param(
     [string]$OutputDir = "./test-results",
 
     [Parameter(Mandatory = $false)]
-    [int]$MutationThreshold = 60
+    [int]$MutationThreshold = 60,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$EnforceBudget
 )
 
 $ErrorActionPreference = "Stop"
@@ -109,6 +116,18 @@ function Find-TestProject {
 function Ensure-OutputDir {
     if (-not (Test-Path $OutputDir)) {
         New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+    }
+}
+
+# Tier budgets in seconds, kept in step with the canonical table in
+# references/quality-gates.md. A budget of 0 means "this stage is not budgeted".
+function Get-TierBudget($stage) {
+    if ($env:QA_TIER_BUDGET) { return [int]$env:QA_TIER_BUDGET }
+    switch ($stage) {
+        "Smoke"      { return 30 }
+        "Regression" { return 300 }
+        "Full"       { return 900 }
+        default      { return 0 }
     }
 }
 
@@ -172,7 +191,7 @@ switch ($Stage) {
         Write-Host "  [2/2] Running mutation testing..." -ForegroundColor Gray
         Ensure-Tool "dotnet-stryker"
         $start = Get-Date
-        dotnet stryker --output-path "$OutputDir/mutation-report" --break-at $MutationThreshold
+        dotnet stryker -p $testProject --output-path "$OutputDir/mutation-report" --break-at $MutationThreshold
         $mutationSuccess = $LASTEXITCODE -eq 0
         $duration = ((Get-Date) - $start).ToString("mm\:ss")
         Write-StageResult "Mutation Testing" $mutationSuccess $duration
@@ -205,7 +224,7 @@ switch ($Stage) {
         Write-StageHeader "Mutation" "Run mutation testing only (fails if score < $MutationThreshold%)"
         Ensure-Tool "dotnet-stryker"
         $start = Get-Date
-        dotnet stryker --output-path "$OutputDir/mutation-report" --break-at $MutationThreshold
+        dotnet stryker -p $testProject --output-path "$OutputDir/mutation-report" --break-at $MutationThreshold
         $success = $LASTEXITCODE -eq 0
         $duration = ((Get-Date) - $start).ToString("mm\:ss")
         Write-StageResult "Mutation" $success $duration
@@ -214,6 +233,24 @@ switch ($Stage) {
 }
 
 $overallDuration = ((Get-Date) - $overallStart).ToString("mm\:ss")
+
+# --- Tier budget ---
+# The budget is a gate, not a table entry: a tier that quietly grows past it
+# stops being the fast feedback loop it was designed to be.
+$stageElapsed = [int]((Get-Date) - $overallStart).TotalSeconds
+$budget = Get-TierBudget $Stage
+if ($budget -gt 0) {
+    Write-Host "  Duration: ${stageElapsed}s / budget ${budget}s for the $Stage tier" -ForegroundColor Gray
+    if ($stageElapsed -gt $budget) {
+        if ($EnforceBudget) {
+            Write-Host "ERROR: the $Stage tier overran its budget ($stageElapsed s > $budget s)." -ForegroundColor Red
+            $overallSuccess = $false
+        } else {
+            Write-Host "  WARNING: the $Stage tier overran its budget ($stageElapsed s > $budget s)." -ForegroundColor Yellow
+            Write-Host "           Re-run with -EnforceBudget to make this a failure." -ForegroundColor Yellow
+        }
+    }
+}
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor $(if ($overallSuccess) { "Green" } else { "Red" })

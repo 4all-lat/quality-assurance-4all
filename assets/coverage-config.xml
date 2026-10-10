@@ -1,5 +1,7 @@
 <!-- Coverage Configuration Snippet for .NET / Coverlet -->
-<!-- Add this to your test project .csproj file inside <PropertyGroup> -->
+<!-- This file is a complete <PropertyGroup> element. Your test project .csproj
+     already contains one: copy the properties below into it rather than
+     pasting a second <PropertyGroup> next to it. -->
 
 <PropertyGroup>
   <CollectCoverage>true</CollectCoverage>
@@ -30,11 +32,16 @@
   - IncludeTestAssembly: Set to true if you want coverage of the test project itself
 
   Usage:
-    dotnet test --collect:"XPlat Code Coverage"
+    Collect coverage while running the tests, enabling the collect switch with
+    the XPlat Code Coverage collector. The exact flags are listed in
+    references/tools-by-stack.md — they are not repeated here because two
+    consecutive hyphens cannot appear inside an XML comment (MSBuild would
+    report "not well-formed"), and that is also why you should keep them out
+    when you edit this block.
 
   Generate HTML report:
-    dotnet tool install -g dotnet-reportgenerator-globaltool
-    reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html
+    Install the ReportGenerator global tool, then run:
+    reportgenerator -reports:coverage.cobertura.xml -targetdir:coverage-report -reporttypes:Html
 
   For Vitest (Node.js/TS), install the v8 provider and use vitest.config.ts:
     npm install -D @vitest/coverage-v8

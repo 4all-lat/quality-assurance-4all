@@ -98,6 +98,32 @@ public class ResourceResponse
 | Page overflow | `page=999999` | 200 with empty array | N/A |
 | PageSize overflow | `pageSize=100000` | Capped to max (100) | N/A |
 
+### Abuse Cases & Threat Model
+
+An edge case is what the system does when a *user* does something unexpected. An abuse case is what
+it does when someone attacks it — and it is the cheapest security work in the whole pipeline,
+because it happens before any code exists. Walk **STRIDE** over every trust boundary this change
+adds or crosses (a new endpoint, an outbound call, a queue, a file upload, a new role) and fill a row
+per boundary. "Not applicable, because …" is a valid answer; an empty cell is not.
+
+| STRIDE | Question | Abuse case for this change | Mitigation | Residual risk |
+|--------|----------|---------------------------|------------|---------------|
+| **S**poofing | Can an attacker claim another identity? | | | |
+| **T**ampering | Can data in transit or at rest be altered? | | | |
+| **R**epudiation | Can an actor deny an action that happened? | | | |
+| **I**nformation disclosure | What leaks through responses, logs, errors, timing? | | | |
+| **D**enial of service | What unbounded input, flow or fan-out can be triggered? | | | |
+| **E**levation of privilege | Can a lower role reach a higher function? | | | |
+
+For each new endpoint, consumer or job, also record:
+
+- The **assets** it touches and who may touch them (drives the API1 and API5 tests).
+- The **untrusted inputs**, including the ones coming from your own other services (drives API10).
+- The **abuse cases that are accepted rather than mitigated**, with the reason. An undocumented
+  accepted risk is indistinguishable from an unnoticed one.
+- The **concurrent paths**: what happens if two identical requests arrive at once, if the client
+  retries, or if the same message is delivered twice. See `references/concurrency-and-idempotency.md`.
+
 ## 6. Open Questions & Blocking Points
 
 - [ ] Open question 1 — who needs to decide?
@@ -116,8 +142,17 @@ public class ResourceResponse
 ### BDD Scenarios (Gherkin)
 See `assets/bdd-feature-template.feature` for the BDD scenario template.
 
-### Security Tests (OWASP)
-- [ ] API1: Cross-tenant access returns 403
-- [ ] API2: Invalid JWT/API key returns 401
-- [ ] API4: Rate limiting returns 429
-- [ ] API8: No stack traces in error responses
+### Security Tests (OWASP API Security Top 10)
+Check every item an endpoint can plausibly fail, and say why the others do not
+apply. An unchecked box is an untested risk, not a passing one.
+
+- [ ] API1: Cross-tenant access returns 403 (BOLA)
+- [ ] API2: Invalid JWT/API key returns 401; expiry and revocation are honoured
+- [ ] API3: Response never exposes fields the caller may not read; mass assignment is rejected
+- [ ] API4: Rate limiting returns 429; page size, payload size and batch size are capped
+- [ ] API5: A lower-privileged role cannot reach an admin function by calling it directly
+- [ ] API6: Sensitive business flows (signup, checkout, password reset) are throttled and non-scriptable
+- [ ] API7: User-supplied URLs cannot reach internal services (SSRF)
+- [ ] API8: No stack traces, default credentials, directory listing or verbose headers
+- [ ] API9: No undocumented or deprecated API version is reachable; the inventory is accurate
+- [ ] API10: Data from third-party APIs is validated before use, with timeouts and size limits

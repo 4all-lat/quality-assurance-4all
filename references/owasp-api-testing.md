@@ -81,12 +81,164 @@ public async Task InvalidApiKey_Returns401()
 }
 ```
 
+The two tests above only prove that an obviously bad credential is refused. Authentication is a
+*lifecycle*, and most real breaks live in the transitions: a token that outlives the session it
+belongs to, a refresh token that can be replayed, a key the attacker chooses. Each transition below
+is its own test.
+
+### Test: A token that expires mid-session is rejected
+
+A long-running client must not be able to keep using an access token after its `exp`. Sign a token
+that expires a second from now, use it, wait, use it again.
+
+```csharp
+[Fact]
+[Trait("Category", "Security")]
+public async Task TokenExpiringDuringSession_IsRejectedOnNextCall()
+{
+    using var shortLived = _factory.IssueToken(tenant: "TENANT_A", lifetime: TimeSpan.FromSeconds(1));
+    var client = _factory.CreateClientWithToken(shortLived);
+
+    (await client.GetAsync("/api/v1/dispatch-logs")).StatusCode.Should().Be(HttpStatusCode.OK);
+
+    await Task.Delay(TimeSpan.FromSeconds(2));
+
+    (await client.GetAsync("/api/v1/dispatch-logs")).StatusCode
+        .Should().Be(HttpStatusCode.Unauthorized, "because the access token expired mid-session");
+}
+```
+
+### Test: A rotated refresh token cannot be replayed
+
+Rotation without reuse detection is theatre: the attacker who stole the old token keeps working.
+Rotating a refresh token must invalidate its predecessor, and presenting the predecessor must be
+treated as theft — revoke the whole family, not just that one value.
+
+```csharp
+[Fact]
+[Trait("Category", "Security")]
+public async Task ReplayedRefreshToken_RevokesTheFamily()
+{
+    var first = await _factory.LoginAsync("TENANT_A");
+    var second = await _factory.RefreshAsync(first.RefreshToken);   // rotation: `first` is now dead
+
+    // Replay the superseded token — this is the signature of a stolen token.
+    var replay = await _factory.RefreshRawAsync(first.RefreshToken);
+    replay.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+    // And the session that legitimately rotated must be dead too: one of the two
+    // holders is an attacker and we cannot tell which, so neither keeps access.
+    var afterReplay = await _factory.RefreshRawAsync(second.RefreshToken);
+    afterReplay.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
+        "because reuse detection revokes the entire token family");
+}
+```
+
+### Test: Logout revokes server-side
+
+Deleting the token in the browser is not revocation. The refresh token must stop working on the
+server, for every replica.
+
+```csharp
+[Fact]
+[Trait("Category", "Security")]
+public async Task Logout_RevokesRefreshTokenServerSide()
+{
+    var session = await _factory.LoginAsync("TENANT_A");
+
+    (await _factory.LogoutAsync(session.AccessToken)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+    var reuse = await _factory.RefreshRawAsync(session.RefreshToken);
+    reuse.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "because logout revoked it server-side");
+}
+```
+
+### Test: A password change invalidates earlier tokens
+
+Otherwise a password change — the one action a user takes *because* they suspect compromise — locks
+nobody out. Invalidate on a `tokenVersion` / `passwordChangedAt` claim, not on a client-side log out.
+
+```csharp
+[Fact]
+[Trait("Category", "Security")]
+public async Task PasswordChange_InvalidatesExistingTokens()
+{
+    var session = await _factory.LoginAsync("TENANT_A");
+    await _factory.ChangePasswordAsync(session.AccessToken, from: "old", to: "new");
+
+    var client = _factory.CreateClientWithToken(session.AccessToken);
+    (await client.GetAsync("/api/v1/dispatch-logs")).StatusCode
+        .Should().Be(HttpStatusCode.Unauthorized, "because the password change invalidated it");
+}
+```
+
+### Test: `alg=none` and algorithm confusion are rejected
+
+The classic JWT break: the library trusts the header's `alg`. If the API accepts `none`, anyone can
+mint a token. If it accepts HS256 with the RSA *public* key as the HMAC secret, anyone who has the
+public key can mint one too.
+
+```csharp
+[Theory]
+[Trait("Category", "Security")]
+[InlineData("{\"alg\":\"none\",\"typ\":\"JWT\"}", "", "alg=none with an empty signature")]
+[InlineData("{\"alg\":\"HS256\",\"typ\":\"JWT\"}", "<hmac-signed with the RSA public key>", "algorithm confusion HS256-for-RS256")]
+public async Task ForgedAlgorithm_IsRejected(string header, string signature, string description)
+{
+    var forged = JwtForge(header, payload: ValidPayloadFor("TENANT_A"), signature: signature);
+    var client = _factory.CreateClientWithToken(forged);
+
+    (await client.GetAsync("/api/v1/dispatch-logs")).StatusCode
+        .Should().Be(HttpStatusCode.Unauthorized, $"because {description} must not authenticate");
+}
+```
+
+`jwt_tool` automates the same case list (`jwt_tool <token> -X a` for `alg:none`, `-X k` for the
+`kid` injection below); the assertion is still yours to write.
+
+### Test: A tampered signature and `kid` injection are rejected
+
+```csharp
+[Fact]
+[Trait("Category", "Security")]
+public async Task TamperedSignature_IsRejected()
+{
+    var token = _factory.IssueToken("TENANT_A");
+    var tampered = token[..^2] + (token[^1] == 'A' ? "BB" : "AA");
+
+    var client = _factory.CreateClientWithToken(tampered);
+    (await client.GetAsync("/api/v1/dispatch-logs")).StatusCode
+        .Should().Be(HttpStatusCode.Unauthorized);
+}
+
+[Fact]
+[Trait("Category", "Security")]
+public async Task KidInjection_CannotSelectAnAttackerSuppliedKey()
+{
+    // `kid` pointing at a path traversal, a URL, or a `jku`/`x5u` header the caller controls
+    var forged = JwtForge(payload: ValidPayloadFor("TENANT_A"),
+                          kid: "../../../../dev/null",
+                          jku: "https://attacker.example/jwks.json");
+
+    var client = _factory.CreateClientWithToken(forged);
+    (await client.GetAsync("/api/v1/dispatch-logs")).StatusCode
+        .Should().Be(HttpStatusCode.Unauthorized,
+            "because the key must come from a server-side allowlist, never from the token");
+}
+```
+
 ### What to verify
 - Empty/malformed/expired JWT -> 401
 - Invalid API key -> 401
 - Missing auth header -> 401
 - JWT with tampered payload -> 401
 - API key with wrong prefix -> 401
+- A token expiring *during* a session -> 401 on the next call
+- A rotated refresh token replayed -> 401, **and the whole family is revoked**
+- Logout -> the refresh token stops working server-side
+- Password change -> every token issued before it is invalid -> 401
+- `alg=none`, algorithm confusion, tampered signature, `kid`/`jku` injection -> 401
+- The signing algorithm is chosen by the server from an allowlist, never read from the token
 
 ---
 

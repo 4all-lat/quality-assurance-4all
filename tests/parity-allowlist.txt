@@ -1,0 +1,13 @@
+# Intentional differences between the bash and PowerShell scripts.
+#
+# Format:  <suite> <item>
+#   suite  run-tests | setup
+#   item   the canonical name the parity test compares (a stage, a flag/parameter)
+#
+# Everything not listed here must match. Adding a line is a deliberate decision
+# to let the two implementations drift on that one point, so give it a reason.
+
+# PowerShell provides -? and comment-based help automatically; neither script
+# declares an explicit help switch.
+run-tests --help   # PowerShell: -? and comment-based help
+setup --help       # PowerShell: -? and comment-based help

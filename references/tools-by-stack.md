@@ -32,6 +32,17 @@ Frameworks and tools for each phase of the QA pipeline, organized by technology 
 | WebApplicationFactory | In-memory test server | `dotnet add package Microsoft.AspNetCore.Mvc.Testing` |
 | Playwright | Browser/live integration testing | `dotnet add package Microsoft.Playwright` |
 
+### Concurrency & Idempotency
+
+See [`concurrency-and-idempotency.md`](concurrency-and-idempotency.md) for the scenarios and the tests.
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| `Barrier` / `CountdownEvent` | Release N requests at the same instant, so the race actually happens | Built-in (`System.Threading`) |
+| Testcontainers for .NET | Run the race against the real database engine — in-memory providers hide it | `dotnet add package Testcontainers` |
+| `[Trait("Category", "Concurrency")]` | Select the class in the Regression tier | Built-in xUnit |
+| Polly | Assert retry and backoff behaviour on outbound calls | `dotnet add package Polly` |
+
 ### Property-Based Testing
 
 | Tool | Purpose | Install |
@@ -59,12 +70,36 @@ Frameworks and tools for each phase of the QA pipeline, organized by technology 
 | HttpClient + Task.WhenAll | Simple concurrent load | Built-in, no install needed |
 | NBomber | Advanced load testing | `dotnet add package NBomber` |
 
-### Security Testing
+### Security Testing (dynamic)
+
+These drive a running system, so they belong to the Full tier.
 
 | Tool | Purpose | Notes |
 |------|---------|-------|
 | OWASP ZAP | DAST scanning | External tool, run separately |
-| SonarQube | SAST static analysis | External server/tool |
+| Playwright | Authenticated OWASP API probes | `dotnet add package Microsoft.Playwright` |
+| jwt_tool | Forge `alg=none`, algorithm-confusion and `kid`-injection tokens for the API2 lifecycle tests | External tool (`pipx install jwt-tool`) |
+
+### Security Scanning (static — every PR)
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| `dotnet list package --vulnerable` | Dependency advisory scan, direct and transitive | Built into the SDK — no install |
+| Gitleaks | Secret scanning over the diff and the git history | `brew install gitleaks` (external binary) |
+| TruffleHog | Secret scanning with live-credential verification | `brew install trufflehog` (external binary) |
+| Roslyn analyzers | SAST, built into the compiler | `<EnableNETAnalyzers>true</EnableNETAnalyzers>` and `<AnalysisMode>AllEnabledByDefault</AnalysisMode>` in the `.csproj` |
+| CycloneDX for .NET | SBOM per release | `dotnet tool install -g CycloneDX` |
+| Trivy | Container image scan (if the service ships in one) | External tool |
+
+```xml
+<!-- .csproj — fail the build on any analyzer warning instead of printing it -->
+<PropertyGroup>
+  <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  <WarningsAsErrors>CA*,S*</WarningsAsErrors>
+</PropertyGroup>
+```
 
 ### Test Categorization
 
@@ -79,12 +114,45 @@ public void HealthCheck_ReturnsOk() { ... }
 public void GetAllItems_ReturnsPaginatedResults() { ... }
 
 [Fact]
+[Trait("Category", "Concurrency")]
+public async Task DoubleSubmit_CreatesExactlyOne() { ... }
+
+// The PR subset of the security suite: BOLA, auth lifecycle, injection.
+// Not Category=Security, so `Category!=Security` lets it through to every PR.
+[Fact]
+[Trait("Category", "SecurityPR")]
+public async Task CrossTenantAccess_Returns403() { ... }
+
+[Fact]
 [Trait("Category", "Security")]
-public void CrossTenantAccess_Returns403() { ... }
+public void RateLimitExceeded_Returns429() { ... }
 
 [Fact]
 [Trait("Category", "Performance")]
-public void GetEndpoint_P95Under2Seconds() { ... }
+public void GetEndpoint_P95WithinBudget() { ... }
+```
+
+### UI Quality
+
+Accessibility and visual regression are part of the same release gate as the API tests, so they run
+in the Regression tier from the same test project. Practices and the full checklist live in
+[`quality-engineering-practices.md`](quality-engineering-practices.md).
+
+| Concern | Tool | Notes |
+|---------|------|-------|
+| Accessibility | `axe-core` injected through Playwright | Fails on any new violation, not on a raw count |
+| Visual regression | Playwright `toHaveScreenshot()` | Snapshots committed; animations disabled, viewports fixed |
+| Responsive | Playwright viewport projects | Phone / tablet / desktop as separate projects |
+
+```csharp
+[Fact]
+[Trait("Category", "Regression")]
+public async Task Home_HasNoAccessibilityViolations()
+{
+    await Page.GotoAsync("/");
+    var results = await new AxeBuilder(Page).AnalyzeAsync();
+    results.Violations.Should().BeEmpty();
+}
 ```
 
 ### Coverage Configuration (.csproj)
@@ -126,6 +194,17 @@ Note: Vitest and Jest have built-in mocking and assertions — no separate libra
 | Supertest | HTTP assertion library | `npm install -D supertest` |
 | Playwright | Browser integration testing | `npm install -D @playwright/test` |
 
+### Concurrency & Idempotency
+
+See [`concurrency-and-idempotency.md`](concurrency-and-idempotency.md) for the scenarios and the tests.
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| `Promise.all` over a pre-armed barrier | Release N requests together — bare `Promise.all` usually serialises and hides the race | Built-in |
+| testcontainers (Node) | Run the race against the real database engine | `npm install -D testcontainers` |
+| `describe('Concurrency', …)` | Select the class in the Regression tier | Built-in Vitest |
+| `AbortSignal.timeout` | Cap a hung race instead of blocking CI | Built-in |
+
 ### Property-Based Testing
 
 | Tool | Purpose | Install |
@@ -152,6 +231,30 @@ Note: Vitest and Jest have built-in mocking and assertions — no separate libra
 | k6 | Load testing | External tool (https://k6.io) |
 | autocannon | Node.js HTTP load testing | `npm install -D autocannon` |
 
+### Security Testing (dynamic)
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| Playwright | Authenticated OWASP API probes | `npm install -D @playwright/test` |
+| OWASP ZAP | DAST scanning | External tool, run separately |
+| jwt_tool / `jose` | Forge `alg=none`, algorithm-confusion and `kid`-injection tokens for the API2 lifecycle tests | `pipx install jwt-tool` / `npm install -D jose` |
+
+### Security Scanning (static — every PR)
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| `npm audit` | Dependency advisory scan | Built into npm — no install |
+| eslint-plugin-security | SAST | `npm install -D eslint eslint-plugin-security` |
+| Gitleaks / TruffleHog | Secret scanning over the diff and the history | `brew install gitleaks` (external binary) |
+| `npm sbom` | SBOM per release | Built into npm 9+ |
+| Trivy | Container image scan (if the service ships in one) | External tool |
+
+```jsonc
+// eslint.config.js — security rules as errors, not warnings, so CI fails
+import security from 'eslint-plugin-security'
+export default [ security.configs.recommended ]   // every rule is "error"
+```
+
 ### Test Categorization
 
 ```typescript
@@ -164,8 +267,39 @@ describe('Regression', () => {
   it('returns paginated results', async () => { ... })
 })
 
-describe('Security', () => {
+describe('Concurrency', () => {
+  it('creates exactly one order on a double submit', async () => { ... })
+})
+
+// The PR subset of the security suite. The Regression filter is
+// `--testNamePattern "^(?!.*(Security(?!PR)|Performance))"` — the negative
+// lookahead keeps SecurityPR in and drops Security.
+describe('SecurityPR', () => {
   it('cross-tenant access returns 403', async () => { ... })
+})
+
+describe('Security', () => {
+  it('rate limiting returns 429 under load', async () => { ... })
+})
+```
+
+### UI Quality
+
+| Concern | Tool | Notes |
+|---------|------|-------|
+| Accessibility | `@axe-core/playwright` | Fails on any new violation |
+| Visual regression | Playwright `toHaveScreenshot()`, or Percy for hosted review | Snapshots committed; `maxDiffPixelRatio` small and explicit |
+| Responsive | Playwright viewport projects | Phone / tablet / desktop as separate projects |
+
+```typescript
+import AxeBuilder from '@axe-core/playwright'
+
+describe('Regression', () => {
+  it('home has no accessibility violations', async ({ page }) => {
+    await page.goto('/')
+    const results = await new AxeBuilder({ page }).analyze()
+    expect(results.violations).toEqual([])
+  })
 })
 ```
 
@@ -215,6 +349,17 @@ export default defineConfig({
 | pytest + httpx | HTTP integration testing | `pip install httpx pytest` |
 | Playwright | Browser integration testing | `pip install playwright` |
 
+### Concurrency & Idempotency
+
+See [`concurrency-and-idempotency.md`](concurrency-and-idempotency.md) for the scenarios and the tests.
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| `threading.Barrier` / `asyncio.gather` / `concurrent.futures` | Release N requests at the same instant, so the race actually happens | Built-in |
+| testcontainers-python | Run the race against the real database engine — SQLite in-memory hides it | `pip install testcontainers` |
+| pytest-timeout | Fail a hung race instead of blocking CI | `pip install pytest-timeout` |
+| `@pytest.mark.concurrency` | Select the class in the Regression tier | Declared in `pytest.ini` |
+
 ### Property-Based Testing
 
 | Tool | Purpose | Install |
@@ -240,6 +385,31 @@ export default defineConfig({
 |------|---------|---------|
 | locust | Load testing | `pip install locust` |
 
+### Security Testing (dynamic)
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| Playwright | Authenticated OWASP API probes | `pip install playwright` |
+| OWASP ZAP | DAST scanning | External tool, run separately |
+| jwt_tool | Forge `alg=none`, algorithm-confusion and `kid`-injection tokens for the API2 lifecycle tests | `pipx install jwt-tool` |
+
+### Security Scanning (static — every PR)
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| pip-audit | Dependency advisory scan (`--strict` to fail on any advisory) | `pip install pip-audit` |
+| bandit | SAST | `pip install bandit` |
+| Gitleaks / TruffleHog | Secret scanning over the diff and the history | `brew install gitleaks` (external binary) |
+| cyclonedx-bom | SBOM per release | `pip install cyclonedx-bom` |
+| Trivy | Container image scan (if the service ships in one) | External tool |
+
+```ini
+# pyproject.toml — bandit as a build gate, not an advisory report
+[tool.bandit]
+exclude_dirs = ["tests", "migrations"]
+# run: bandit -r src -c pyproject.toml   (exit 1 on any HIGH severity finding)
+```
+
 ### Test Categorization
 
 ```python
@@ -254,14 +424,39 @@ def test_health_check():
 def test_get_all_items():
     ...
 
+@pytest.mark.concurrency
+def test_double_submit_creates_exactly_one():
+    ...
+
+# The PR subset of the security suite. pytest -m "not security" includes it.
+@pytest.mark.securitypr
+def test_cross_tenant_access_returns_403():
+    ...
+
 @pytest.mark.security
-def test_cross_tenant_access():
+def test_rate_limit_exceeded_returns_429():
     ...
 
 # Run by marker:
 # pytest -m smoke
 # pytest -m regression
-# pytest -m "not slow"
+# pytest -m "not security and not performance"
+```
+
+### UI Quality
+
+| Concern | Tool | Notes |
+|---------|------|-------|
+| Accessibility | `axe-core` through Playwright, or `pa11y` against a rendered URL | Fails on any new violation |
+| Visual regression | Playwright `toHaveScreenshot()` | Snapshots committed; `max_diff_pixels` small and explicit |
+| Responsive | Playwright viewport contexts | Phone / tablet / desktop as separate contexts |
+
+```python
+@pytest.mark.regression
+def test_home_has_no_accessibility_violations(page):
+    page.goto("/")
+    results = Axe(page).analyze()
+    assert results.violations == []
 ```
 
 ### Coverage Configuration (.coveragerc)
@@ -291,11 +486,14 @@ directory = coverage_html_report
 | Unit | xUnit + Moq + FluentAssertions | Vitest (built-in) | pytest + unittest.mock |
 | BDD | Reqnroll | Cucumber.js | Behave |
 | Integration | WebApplicationFactory + Playwright | Supertest + Playwright | httpx + Playwright |
+| Concurrency | `Barrier` + Testcontainers | `Promise.all` + testcontainers | `threading.Barrier` + testcontainers |
 | Property-Based | FsCheck | fast-check | Hypothesis |
 | Coverage | Coverlet + ReportGenerator | @vitest/coverage-v8 | coverage.py |
 | Mutation | Stryker.NET | Stryker.js | mutmut / cosmic-ray |
 | Performance | HttpClient concurrent / NBomber | autocannon / k6 | locust |
-| Security | Custom + Playwright | Custom + Playwright | Custom + Playwright |
+| Security (dynamic) | Custom + Playwright + jwt_tool | Custom + Playwright + jwt_tool | Custom + Playwright + jwt_tool |
+| Security scanning | `dotnet list --vulnerable` + Roslyn + gitleaks | `npm audit` + eslint-plugin-security + gitleaks | pip-audit + bandit + gitleaks |
+| UI quality | Playwright + `axe-core` + visual snapshots | `@axe-core/playwright` + Playwright snapshots | Playwright + `axe-core` / `pa11y` |
 
 ---
 
@@ -322,10 +520,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # a shallow clone cannot scan the history for secrets
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'
-      - run: dotnet test --filter "Category=Regression"
+      # Security scanning runs here, on every PR: none of it needs a deployed system.
+      - name: Dependency scan
+        run: |
+          dotnet restore
+          ! dotnet list package --vulnerable --include-transitive | grep -E '\b(High|Critical)\b'
+      - name: Secret scan (diff and history)
+        run: |
+          gitleaks detect --redact
+          trufflehog git file://. --only-verified --fail
+      - name: SAST
+        run: dotnet build -warnaserror
+      # Category=SecurityPR is the BOLA/auth/injection subset that must not wait for nightly.
+      - run: dotnet test --filter "Category!=Security&Category!=Performance"
 
   full:
     needs: regression
@@ -333,11 +545,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0'
       - run: dotnet test  # all tests
       - run: dotnet stryker  # mutation testing
+      - name: SBOM for the release artifact
+        run: |
+          dotnet tool install -g CycloneDX
+          dotnet CycloneDX . --output-directory sbom
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom/
 ```
 
 ### GitHub Actions — Node.js/TS
@@ -362,9 +584,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # a shallow clone cannot scan the history for secrets
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - run: npm install
-      - run: npm test --coverage
+      - run: npm ci
+      # Security scanning runs here, on every PR: none of it needs a deployed system.
+      - name: Dependency scan
+        run: npm audit --audit-level=high
+      - name: Secret scan (diff and history)
+        run: |
+          gitleaks detect --redact
+          trufflehog git file://. --only-verified --fail
+      - name: SAST
+        run: npx eslint . --max-warnings=0
+      - run: npx vitest run --coverage --testNamePattern "^(?!.*(Security(?!PR)|Performance))"
+
+  full:
+    needs: regression
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npx vitest run          # all tests, security included
+      - run: npx stryker run
+      - name: SBOM for the release artifact
+        run: npm sbom --sbom-format cyclonedx > sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
 ```

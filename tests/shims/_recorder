@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Recorder shim. Symlinked under tests/<sandbox>/bin as dotnet, npm, npx,
+# python3, python, pytest, reportgenerator and stryker, so any call made by a
+# script under test is recorded instead of hitting a real toolchain.
+#
+# Contract:
+#   SHIM_LOG      file receiving one line per invocation, fields split by TAB
+#   SHIM_EXIT     status returned by every shim (default 0)
+#   SHIM_FAIL_FOR a shim name that must fail; others still succeed
+#   SHIM_FAIL_EXIT status returned by the failing shim (default 1)
+#   SHIM_SLEEP    seconds the shim waits before returning (default 0), used to
+#                 exercise the tier-budget gate without a real slow toolchain
+#   SHIM_KILL_PIPE  when "1", `dotnet tool list` writes its listing and then
+#                 dies of SIGPIPE, reproducing deterministically what happens
+#                 when the caller pipes the listing into `grep -q` under
+#                 `pipefail` and grep exits on the first match
+
+name="$(basename "$0")"
+
+if [[ -n "${SHIM_LOG:-}" ]]; then
+  {
+    printf '%s' "$name"
+    for arg in "$@"; do printf '\t%s' "$arg"; done
+    printf '\n'
+  } >>"$SHIM_LOG"
+fi
+
+if [[ -n "${SHIM_SLEEP:-}" && "${SHIM_SLEEP}" != "0" ]]; then
+  sleep "$SHIM_SLEEP"
+fi
+
+if [[ "${SHIM_FAIL_FOR:-}" == "$name" ]]; then
+  printf 'shim: %s forced to fail\n' "$name" >&2
+  exit "${SHIM_FAIL_EXIT:-1}"
+fi
+
+# A couple of call sites read the shim's stdout, so emit something plausible
+# rather than an empty stream.
+case "$name" in
+  dotnet)
+    # `dotnet tool list -g | grep -q <tool>` — reporting the tools as already
+    # installed keeps the scripts from attempting a global install, so the
+    # recorded call list stays limited to what the stage actually runs.
+    case "$*" in
+      'tool list'*)
+        # One write, not several: the call site pipes this into `grep -q`,
+        # which exits as soon as it matches. A later write would then take
+        # SIGPIPE and, under `pipefail`, look like a failed tool listing.
+        printf 'Package Id                             Version      Commands\n-------------------------------------- ------------ ------------------------------\ndotnet-stryker                         4.0.0        dotnet-stryker\ndotnet-reportgenerator-globaltool      5.3.5        reportgenerator\n'
+        if [[ "${SHIM_KILL_PIPE:-}" == "1" ]]; then
+          kill -PIPE $$
+        fi
+        ;;
+    esac
+    ;;
+esac
+
+exit "${SHIM_EXIT:-0}"

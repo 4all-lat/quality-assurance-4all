@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "19603e55-7454-4382-b5f6-e3cd58e0b6b4",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/Users/jfao/CascadeProjects/quality-assurance-4all/.archify/workflow-qa-stages-20261001-002511/candidate.json",
+  "output": "/Users/jfao/CascadeProjects/quality-assurance-4all/.archify/workflow-qa-stages-20261001-002511/qa-stages.html",
+  "specification": {
+    "sha256": "3dbf6bd5d4e647f083a9f8d8ea45c8314ee977654fc85719b6b88ffbdb99ea40",
+    "bytes": 41080
+  },
+  "artifact": {
+    "sha256": "87f3412d5ddd740d962c3733b028b2785d2db1f52048814fdf02cb50a7c37618",
+    "bytes": 776259
+  }
+}

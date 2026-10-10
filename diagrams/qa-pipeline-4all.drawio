@@ -1,0 +1,886 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="24.7.17" type="device">
+  <diagram id="pg0" name="00 · Pipeline QA (11 fases)">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p0-title" value="Pipeline QA 4All — de la especificación a producción" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1000" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-sub" value="11 fases organizadas como una pirámide de calidad. Cada fase tiene un gate que debe pasar antes de avanzar a la siguiente; la capa inferior sostiene a la superior." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1400" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p0-band1" value="1 · DEFINICIÓN — la spec es la fuente de verdad" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=13;fontColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="40" y="88" width="1520" height="122" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f1" value="&lt;b&gt;F1 · Especificación&lt;/b&gt;&lt;br&gt;SDD — Spec-Driven Development&lt;br&gt;&lt;i&gt;Gate: spec revisada y aprobada antes de escribir código, con sus abuse cases recorridos&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="126" width="270" height="68" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-der" value="&lt;b&gt;De la spec se deriva todo:&lt;/b&gt;&lt;br&gt;Historias de usuario  ·  Escenarios BDD (F3)  ·  Tests unitarios (F2)  ·  Tests de integración (F4)  ·  Documentación / OpenAPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="360" y="126" width="1180" height="68" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p0-band2" value="2–5 · CONSTRUCCIÓN — pirámide de tests (70% unitarios / 20% integración / 10% E2E)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=13;fontColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="40" y="228" width="1520" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f2" value="&lt;b&gt;F2 · Unit testing&lt;/b&gt;&lt;br&gt;TDD: Red → Green → Refactor&lt;br&gt;&lt;i&gt;Gate: cada método público con test · cobertura ≥ 80%&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="52" y="266" width="355" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f3" value="&lt;b&gt;F3 · BDD&lt;/b&gt;&lt;br&gt;Gherkin: Given-When-Then&lt;br&gt;&lt;i&gt;Gate: cada criterio de aceptación con ≥ 1 escenario&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="432" y="266" width="355" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f4" value="&lt;b&gt;F4 · Integración + contratos&lt;/b&gt;&lt;br&gt;In-memory (TestServer) + live · Pact / OpenAPI&lt;br&gt;&lt;i&gt;Gate: matriz endpoint × tenant · aislamiento por contenido · un solo efecto bajo concurrencia&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="812" y="266" width="355" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f5" value="&lt;b&gt;F5 · Property-based&lt;/b&gt;&lt;br&gt;FsCheck · fast-check · Hypothesis&lt;br&gt;&lt;i&gt;Gate: 200+ casos aleatorios por propiedad&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1192" y="266" width="355" height="86" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p0-band3" value="6–9 · VALIDACIÓN NO FUNCIONAL — seguridad, rendimiento y eficacia real de los tests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=13;fontColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="40" y="386" width="1520" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f6" value="&lt;b&gt;F6 · Seguridad&lt;/b&gt;&lt;br&gt;OWASP API Security Top 10 + escaneos estáticos (SCA, secretos, SAST, SBOM)&lt;br&gt;&lt;i&gt;Gate: 10 riesgos testeados · SQLi no ejecuta · sin stack traces · ningún hallazgo high/critical&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="52" y="424" width="355" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f7" value="&lt;b&gt;F7 · Rendimiento&lt;/b&gt;&lt;br&gt;Carga: P50 / P95 / P99 · throughput · memoria&lt;br&gt;&lt;i&gt;Gate: P95 en objetivo · errores &amp;lt; 0.1% · sin fugas&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="432" y="424" width="355" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f8" value="&lt;b&gt;F8 · Cobertura de código&lt;/b&gt;&lt;br&gt;Coverlet · @vitest/coverage-v8 · coverage.py&lt;br&gt;&lt;i&gt;Gate: ≥ 80% de líneas · el build falla por debajo&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="812" y="424" width="355" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f9" value="&lt;b&gt;F9 · Mutation testing&lt;/b&gt;&lt;br&gt;Stryker.NET · Stryker.js · mutmut&lt;br&gt;&lt;i&gt;Gate: mutation score ≥ 60% (≥ 80% en sistemas críticos)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1192" y="424" width="355" height="86" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p0-band4" value="10–11 · ENTREGA Y OPERACIÓN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#94A3B8;verticalAlign=top;align=left;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=13;fontColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="40" y="544" width="1520" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f10" value="&lt;b&gt;F10 · Estratificación de la regresión&lt;/b&gt;&lt;br&gt;Smoke (~30 s, cada commit) · Regression (~5 min, cada PR, incluye concurrencia y el subconjunto SecurityPR) · Full (~15 min, nightly / pre-release, incluye escaneos estáticos)&lt;br&gt;&lt;i&gt;Gate: Smoke en cada commit · Regression en cada PR · Full antes de cada release · presupuesto por tier aplicado con --enforce-budget&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="52" y="582" width="730" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-f11" value="&lt;b&gt;F11 · Calidad en producción&lt;/b&gt;&lt;br&gt;Checklist pre-producción · SLOs y alertas · validación post-deploy · rollback&lt;br&gt;&lt;i&gt;Gate: checklist completo y validación post-despliegue correcta&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="812" y="582" width="730" height="86" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p0-note" value="Prácticas transversales a todas las fases (tests flaky, datos de test, accesibilidad, regresión visual, code review y Definition of Done) → pestaña «10 · Prácticas transversales y anti-patrones».&lt;br&gt;Documentación de referencia: references/quality-gates.md · owasp-api-testing.md · test-pyramid.md · contract-testing.md · performance-testing.md · quality-engineering-practices.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="1520" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p0-legend" value="Leyenda" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#334155;" vertex="1" parent="1">
+          <mxGeometry x="40" y="712" width="90" height="32" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-lg1" value="Definición / construcción" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="140" y="712" width="200" height="32" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-lg2" value="Seguridad" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="712" width="170" height="32" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-lg3" value="Rendimiento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="530" y="712" width="170" height="32" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-lg4" value="Cobertura / mutación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="710" y="712" width="200" height="32" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-lg5" value="Entrega y operación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="920" y="712" width="200" height="32" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-lg6" value="Gate de fase (bloqueante)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="712" width="220" height="32" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-lg7" value="Flujo de fase" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#374151;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="712" width="190" height="32" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p0-a1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;" edge="1" parent="1" source="p0-f1" target="p0-f2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0-f2" target="p0-f3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0-f3" target="p0-f4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0-f4" target="p0-f5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;" edge="1" parent="1" source="p0-f5" target="p0-f6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0-f6" target="p0-f7">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0-f7" target="p0-f8">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p0-f8" target="p0-f9">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p0-a9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;" edge="1" parent="1" source="p0-f9" target="p0-f10">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg1" name="01 · Pirámides de calidad y de tests">
+    <mxGraphModel dx="1600" dy="820" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p1-title" value="Pirámide de calidad y pirámide de tests" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1000" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-sub" value="La calidad se construye por capas durante todo el ciclo de vida, no se añade al final. Cada capa depende de la que tiene debajo." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1400" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p1-h-left" value="Capas de calidad — se construyen de abajo hacia arriba" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="50" y="90" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-h-right" value="Pirámide de tests — proporción 70 / 20 / 10" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="90" width="530" height="26" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p1-L6" value="&lt;b&gt;Monitorización en producción&lt;/b&gt;&lt;br&gt;&lt;i&gt;Observabilidad · alertas · SLOs&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="300" y="130" width="400" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-L5" value="&lt;b&gt;Performance + seguridad&lt;/b&gt;&lt;br&gt;&lt;i&gt;Requisitos no funcionales&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="250" y="200" width="500" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-L4" value="&lt;b&gt;Integración + contratos + E2E&lt;/b&gt;&lt;br&gt;&lt;i&gt;Entre sistemas · in-memory y live&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="270" width="600" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-L3" value="&lt;b&gt;BDD + property-based testing&lt;/b&gt;&lt;br&gt;&lt;i&gt;Comportamiento y casos límite&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="150" y="340" width="700" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-L2" value="&lt;b&gt;Unit testing (TDD) + cobertura&lt;/b&gt;&lt;br&gt;&lt;i&gt;Componentes individuales · ≥ 80% de líneas&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="410" width="800" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-L1" value="&lt;b&gt;SDD — Spec-Driven Development + AI Spec&lt;/b&gt;&lt;br&gt;&lt;i&gt;Fuente de verdad: código, tests y documentación se derivan de la spec&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="480" width="900" height="62" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p1-P3" value="&lt;b&gt;E2E — 10%&lt;/b&gt;&lt;br&gt;&lt;i&gt;Lentos y frágiles · verifican el sistema completo&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1165" y="130" width="250" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-P2" value="&lt;b&gt;Integración — 20%&lt;/b&gt;&lt;br&gt;&lt;i&gt;Más lentos y frágiles que los unitarios&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="200" width="380" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-P1" value="&lt;b&gt;Unitarios — 70%&lt;/b&gt;&lt;br&gt;&lt;i&gt;Rápidos, fiables y señalan el fallo con precisión&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="270" width="520" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-Pnote" value="La pirámide describe &lt;b&gt;tipos&lt;/b&gt; de test y su proporción.&lt;br&gt;La estratificación describe &lt;b&gt;cuándo&lt;/b&gt; se ejecutan (Smoke / Regression / Full) — ver pestaña «08 · Fase 10 — Estratificación y CI»." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="350" width="520" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p1-n1" value="&lt;b&gt;Anti-patrón: pirámide invertida&lt;/b&gt;&lt;br&gt;Muchos E2E y casi ningún unitario. Consecuencias: suite de horas, tests flaky, pésimo aislamiento del fallo (no sabes qué componente se rompió) y coste de mantenimiento alto." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="580" width="480" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-n2" value="&lt;b&gt;Anti-patrón: reloj de arena&lt;/b&gt;&lt;br&gt;Muchos unitarios y muchos E2E, pero pocos de integración. Desaparece la capa intermedia que verifica que los componentes encajan sin el coste de un E2E completo." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="550" y="580" width="480" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1-n3" value="&lt;b&gt;Regla de dependencia&lt;/b&gt;&lt;br&gt;Sin tests unitarios fiables no hay integración fiable. Sin tests funcionales fiables no hay tests de seguridad fiables. Solo se puede subir de capa si la de abajo es sólida." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="580" width="500" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p1-foot" value="Cada capa tiene su gate bloqueante: spec aprobada → cobertura ≥ 80% → criterios de aceptación cubiertos → matriz endpoint × tenant → 200+ casos por propiedad → 10 riesgos OWASP → P95 en objetivo → mutation score ≥ 60%." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="720" width="1500" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg2" name="02 · Fase 1 — Especificación (SDD)">
+    <mxGraphModel dx="1600" dy="790" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="790" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p2-title" value="Fase 1 · Especificación — SDD (Spec-Driven Development)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1200" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-sub" value="La spec es la única fuente de verdad: código, tests, documentación y tickets se derivan de ella. Cualquier cambio empieza actualizando o revisando la spec." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1400" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p2-in" value="&lt;b&gt;Entrada&lt;/b&gt;&lt;br&gt;Requisito de negocio, ticket o necesidad detectada" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="120" width="270" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-spec" value="&lt;b&gt;SPEC / AI Spec&lt;/b&gt;&lt;br&gt;Documento versionado en el repositorio, junto al código" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="110" width="300" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-derh" value="Todo se deriva de la spec" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="780" y="74" width="700" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-d1" value="→  Historias de usuario / work items (desde los criterios de aceptación)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="100" width="780" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-d2" value="→  Escenarios BDD en Gherkin (desde la matriz de casos límite) — Fase 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="150" width="780" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-d3" value="→  Tests unitarios (desde el contrato técnico) — Fase 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="200" width="780" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-d4" value="→  Tests de integración (desde el requisito funcional) — Fase 4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="250" width="780" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-d5" value="→  Documentación / OpenAPI (de todas las secciones)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="300" width="780" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2-spec" target="p2-d1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-e0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2-in" target="p2-spec">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p2-h2" value="Plantilla de spec — 7 secciones (assets/ai-spec-template.md)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="380" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-s1" value="&lt;b&gt;1 · Metadata y enrutamiento&lt;/b&gt;&lt;br&gt;Preset, módulo/área, nivel de impacto, esfuerzo, stakeholders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="412" width="350" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-s2" value="&lt;b&gt;2 · Requisito funcional&lt;/b&gt;&lt;br&gt;Contexto de negocio, comportamiento esperado, criterios de aceptación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="440" y="412" width="350" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-s3" value="&lt;b&gt;3 · Pre-análisis&lt;/b&gt;&lt;br&gt;Tablas de BD, procedimientos almacenados y servicios legacy afectados" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="412" width="350" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-s4" value="&lt;b&gt;4 · Contrato técnico&lt;/b&gt;&lt;br&gt;Endpoints de API, DTOs, ficheros a modificar, flujo de datos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="412" width="350" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-s5" value="&lt;b&gt;5 · Matriz de casos límite&lt;/b&gt;&lt;br&gt;Escenario / entrada / resultado esperado / manejo del error&lt;br&gt;&lt;i&gt;+ Abuse Cases &amp;amp; Threat Model (STRIDE)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="498" width="350" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-s6" value="&lt;b&gt;6 · Preguntas abiertas y bloqueos&lt;/b&gt;&lt;br&gt;Decisiones pendientes y riesgos identificados" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="440" y="498" width="350" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-s7" value="&lt;b&gt;7 · QA Notes (opcional)&lt;/b&gt;&lt;br&gt;Propiedades a testear, escenarios BDD, tests de seguridad OWASP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="498" width="350" height="76" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p2-gate" value="&lt;b&gt;GATE DE FASE 1&lt;/b&gt; — no se escribe código (ni tests) hasta que la spec está revisada y aprobada y sus abuse cases se han recorrido.&lt;br&gt;Checklist: requisito funcional documentado · contrato técnico definido · matriz de casos límite completa · abuse cases por frontera de confianza · threat model con STRIDE · entradas no confiables y caminos concurrentes identificados · riesgos aceptados por escrito · preguntas abiertas y bloqueos listados · spec versionada en el repositorio junto al código · aprobada por product owner y arquitecto." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="600" width="1490" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2-note" value="Cuando cambia un requisito se actualiza la spec primero y después se propaga al código y a los tests: la spec nunca se queda por detrás de la implementación." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="706" width="1490" height="48" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg3" name="03 · Fases 2-3 — TDD y BDD">
+    <mxGraphModel dx="1600" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p3-title" value="Fases 2 y 3 · Unit testing (TDD) y Behavior-Driven Development (BDD)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1300" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-sub" value="Primero el test que describe el comportamiento (TDD), y en paralelo escenarios Gherkin legibles por negocio que validan el sistema desde la perspectiva del usuario (BDD)." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p3-h-l" value="Fase 2 · Ciclo TDD — Red / Green / Refactor" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="92" width="700" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-red" value="&lt;b&gt;Red&lt;/b&gt;&lt;br&gt;Escribe un test que falla y describe el comportamiento que quieres" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="110" y="140" width="300" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-green" value="&lt;b&gt;Green&lt;/b&gt;&lt;br&gt;Escribe el mínimo código necesario para que el test pase" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="110" y="225" width="300" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-ref" value="&lt;b&gt;Refactor&lt;/b&gt;&lt;br&gt;Mejora el código sin romper el test (que sigue en verde)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="110" y="310" width="300" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;" edge="1" parent="1" source="p3-red" target="p3-green">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;" edge="1" parent="1" source="p3-green" target="p3-ref">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-e3" value="repetir" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=2;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontColor=#1F4E79;" edge="1" parent="1" source="p3-ref" target="p3-red">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-cnote" value="El ciclo se repite para cada comportamiento nuevo.&lt;br&gt;&lt;br&gt;El test se escribe &lt;b&gt;antes&lt;/b&gt; que la implementación: el test es la definición ejecutable del requisito." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="440" y="140" width="300" height="240" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p3-unit" value="&lt;b&gt;Qué se testea a nivel unitario&lt;/b&gt;&lt;br&gt;Validación de entrada y forma de la respuesta en controllers&lt;br&gt;Lógica de negocio y pass-through en services&lt;br&gt;Contratos SQL en repositories (aserción sobre la cadena SQL estática)&lt;br&gt;Manejo de errores en middleware · comportamiento de filtros y atributos&lt;br&gt;Casos límite: entradas nulas, colecciones vacías, valores frontera" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="415" width="680" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-fw" value="&lt;b&gt;Frameworks por stack&lt;/b&gt;&lt;br&gt;&lt;b&gt;.NET&lt;/b&gt; — xUnit / NUnit · Moq / NSubstitute · FluentAssertions&lt;br&gt;&lt;b&gt;Node.js/TS&lt;/b&gt; — Vitest / Jest (mocking y aserciones integradas)&lt;br&gt;&lt;b&gt;Python&lt;/b&gt; — pytest · unittest.mock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="580" width="680" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-gate2" value="&lt;b&gt;GATE FASE 2&lt;/b&gt; — cada método público tiene al menos un test unitario y la cobertura de líneas es ≥ 80%." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="705" width="680" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p3-h-r" value="Fase 3 · BDD — comportamiento en lenguaje de negocio" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="820" y="92" width="740" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-gherkin" value="Feature: Endpoint para el tenant&lt;br&gt;&lt;br&gt;&amp;nbsp;&amp;nbsp;Scenario: Camino feliz — petición autenticada devuelve los campos esperados&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Given una petición autenticada del tenant &quot;TENANT&quot;&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;When la API lee de la tabla &quot;TABLE_NAME&quot;&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Then devuelve los N campos especificados&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;And el caso límite se maneja correctamente&lt;br&gt;&lt;br&gt;&amp;nbsp;&amp;nbsp;Scenario: Tenant no autorizado es rechazado&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Given un tenant no autorizado &quot;OTHER&quot; llama al endpoint&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;When se evalúa el filtro de acceso&lt;br&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Then la API responde 403" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e1e1e;strokeColor=#000000;fontColor=#e6e6e6;fontFamily=Courier;fontSize=10;align=left;spacingLeft=12;spacingTop=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="820" y="130" width="740" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-steps" value="Los pasos Gherkin se conectan al código mediante &lt;b&gt;step definitions&lt;/b&gt;; los escenarios se ejecutan como parte de la suite de tests." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="375" width="740" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-fw2" value="&lt;b&gt;Frameworks por stack&lt;/b&gt;&lt;br&gt;&lt;b&gt;.NET&lt;/b&gt; — Reqnroll (antes SpecFlow) &amp;nbsp;·&amp;nbsp; &lt;b&gt;Node.js/TS&lt;/b&gt; — Cucumber.js &amp;nbsp;·&amp;nbsp; &lt;b&gt;Python&lt;/b&gt; — Behave" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="460" width="740" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-note2" value="Cada criterio de aceptación de la spec debe tener al menos un escenario. Los escenarios son legibles por negocio y los revisa el product owner. Plantilla: assets/bdd-feature-template.feature" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="545" width="740" height="145" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3-gate3" value="&lt;b&gt;GATE FASE 3&lt;/b&gt; — cada criterio de aceptación de la spec tiene al menos un escenario BDD, y todos los escenarios pasan." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="820" y="705" width="740" height="100" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg4" name="04 · Fase 4 — Integración y contratos">
+    <mxGraphModel dx="1600" dy="960" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="960" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p4-title" value="Fase 4 · Tests de integración y de contrato" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1200" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-sub" value="Verifican que el sistema funciona cuando todos los componentes están conectados (API, base de datos, autenticación, middleware, routing) y que dos servicios pueden interoperar sin levantar el sistema completo." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p4-h1" value="Dos niveles de integración" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="92" width="800" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-t1" value="&lt;b&gt;In-memory — ~2 s · sin dependencias&lt;/b&gt;&lt;br&gt;WebApplicationFactory / TestServer&lt;br&gt;Para routing, autenticación, middleware y seguridad de métodos HTTP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="130" width="480" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-t2" value="&lt;b&gt;Live — ~55 s · requiere servidor desplegado&lt;/b&gt;&lt;br&gt;Playwright / HttpClient contra una API real&lt;br&gt;Para consultas a BD, flujos reales de auth, aislamiento de tenants y paginación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="560" y="130" width="480" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-t3" value="&lt;b&gt;Proporción de la pirámide&lt;/b&gt;&lt;br&gt;70% unitarios · 20% integración · 10% E2E. Empieza por los in-memory y añade live solo donde aporten valor real." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="130" width="500" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p4-h2" value="Qué se prueba en la matriz de integración" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="256" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-i1" value="&lt;b&gt;Autenticación&lt;/b&gt;&lt;br&gt;Credenciales válidas e inválidas, JWT, API key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="292" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-i2" value="&lt;b&gt;Autorización&lt;/b&gt;&lt;br&gt;Feature gating por tenant, 403 en features deshabilitadas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="440" y="292" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-i3" value="&lt;b&gt;Aislamiento de datos&lt;/b&gt;&lt;br&gt;El tenant A no ve datos del tenant B — verificado por contenido, no solo por código de estado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="292" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-i4" value="&lt;b&gt;Rate limiting&lt;/b&gt;&lt;br&gt;429 al superar el límite de peticiones" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="292" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-i5" value="&lt;b&gt;Paginación&lt;/b&gt;&lt;br&gt;Página 1 vs página 2, tope de tamaño de página, cálculo del offset" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="382" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-i6" value="&lt;b&gt;Manejo de errores&lt;/b&gt;&lt;br&gt;BD no disponible → error controlado, sin stack trace" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="440" y="382" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-i7" value="&lt;b&gt;Visibilidad en Swagger&lt;/b&gt;&lt;br&gt;El endpoint aparece en el OpenAPI publicado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="382" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-gate4" value="&lt;b&gt;GATE FASE 4&lt;/b&gt; — toda la matriz endpoint × tenant está testeada y el aislamiento de datos se verifica por contenido, no solo por códigos de estado.&lt;br&gt;&lt;b&gt;Concurrencia e idempotencia&lt;/b&gt; — cada endpoint que cambia estado se dispara dos veces y en paralelo, con un solo efecto." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=10;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="382" width="350" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p4-h3" value="Contract testing — validar entre servicios sin levantar todo el sistema" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="490" width="1000" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-c1" value="&lt;b&gt;1 · Contratos dirigidos por el consumidor (Pact)&lt;/b&gt;&lt;br&gt;El consumidor escribe la expectativa (petición exacta y respuesta esperada) → se publica el fichero .pact en el Pact Broker → el proveedor lo reproduce contra su código real (pact verify) → el CI del proveedor falla si rompe la expectativa de un consumidor.&lt;br&gt;&lt;font color=&quot;#1F4E79&quot;&gt;PactNet · @pact-foundation/pact · pact-python&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="524" width="730" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-c2" value="&lt;b&gt;2 · Contrato por esquema (OpenAPI / JSON Schema)&lt;/b&gt;&lt;br&gt;La API publica su definición OpenAPI/JSON Schema como contrato. El proveedor valida el spec y los consumidores validan que sus peticiones y las respuestas que parsean cumplen el esquema. No hace falta broker: el fichero de spec es el contrato.&lt;br&gt;&lt;font color=&quot;#1F4E79&quot;&gt;Spectral · Ajv · Microsoft.OpenApi · openapi-spec-validator&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="524" width="740" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-c3" value="&lt;b&gt;Qué se comprueba a nivel de contrato:&lt;/b&gt; formas de petición y respuesta (campos, tipos, array vs objeto) · campos requeridos frente a opcionales · forma de la paginación (data / items / array crudo) · contratos de error 400 / 401 / 403 / 404 / 429 · cabeceras (Content-Type, Retry-After, rate-limit) · enumeraciones · nulabilidad." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="680" width="1500" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-gatec" value="&lt;b&gt;GATE DE CONTRATOS&lt;/b&gt; — cada frontera de API entre equipos tiene un contrato; el CI del proveedor falla cuando se rompe la expectativa de un consumidor y la validación de esquema corre en cada PR del OpenAPI publicado." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="790" width="1500" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4-foot" value="Detalle: references/contract-testing.md · references/test-pyramid.md · references/concurrency-and-idempotency.md" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#6B7280;" vertex="1" parent="1">
+          <mxGeometry x="60" y="872" width="900" height="24" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg5" name="05 · Fase 5 — Property-based testing">
+    <mxGraphModel dx="1600" dy="740" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="740" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p5-title" value="Fase 5 · Property-based testing — casos límite que un humano no piensa" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1400" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-sub" value="En lugar de probar con valores fijos, se definen invariantes (propiedades) y el framework genera cientos de combinaciones aleatorias para intentar romperlas." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p5-h1" value="Cómo se aplica" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="92" width="800" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-s1" value="&lt;b&gt;1 · Definir propiedades&lt;/b&gt;&lt;br&gt;Invariantes que deben cumplirse siempre, con independencia de la entrada" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="130" width="440" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-s2" value="&lt;b&gt;2 · Generar entradas aleatorias&lt;/b&gt;&lt;br&gt;El framework produce cientos de combinaciones y verifica la propiedad en cada una" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="560" y="130" width="440" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-s3" value="&lt;b&gt;3 · Shrinking del fallo&lt;/b&gt;&lt;br&gt;Si una entrada falla, se reduce automáticamente al caso mínimo que reproduce el error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="130" width="440" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p5-s1" target="p5-s2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p5-s2" target="p5-s3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p5-h2" value="Propiedades típicas en una API con paginación" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="280" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-p1" value="page ≤ 0 se normaliza siempre a 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="315" width="290" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-p2" value="pageSize &amp;gt; máximo se recorta al tope permitido" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="362" y="315" width="290" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-p3" value="offset = (page − 1) × pageSize nunca desborda" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="664" y="315" width="290" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-p4" value="Páginas consecutivas nunca se solapan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="966" y="315" width="290" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-p5" value="OFFSET y FETCH del SQL son siempre válidos (≥ 0 y &amp;gt; 0)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="315" width="290" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p5-fw" value="&lt;b&gt;Frameworks por stack&lt;/b&gt;&lt;br&gt;&lt;b&gt;.NET&lt;/b&gt; — FsCheck (FsCheck.Xunit) &amp;nbsp;·&amp;nbsp; &lt;b&gt;Node.js/TS&lt;/b&gt; — fast-check &amp;nbsp;·&amp;nbsp; &lt;b&gt;Python&lt;/b&gt; — Hypothesis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="430" width="740" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-gate" value="&lt;b&gt;GATE FASE 5&lt;/b&gt; — cada función de normalización o cálculo tiene al menos un test de propiedad con 200+ casos aleatorios." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="820" y="430" width="740" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-note" value="No confundir con tests parametrizados: el valor está en generar entradas que no se te ocurrirían y en el shrinking automático al caso mínimo reproducible. Los casos que encuentra se convierten en tests de regresión fijos." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="540" width="1500" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5-foot" value="En la spec, la sección 7 (QA Notes) lista las propiedades a testear. Detalle: references/quality-gates.md (Fase 5)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#6B7280;" vertex="1" parent="1">
+          <mxGeometry x="60" y="626" width="900" height="24" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg6" name="06 · Fase 6 — Seguridad (OWASP API Top 10)">
+    <mxGraphModel dx="1600" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p6-title" value="Fase 6 · Seguridad — OWASP API Security Top 10" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1300" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-sub" value="Tests que validan que la API es resistente a los 10 riesgos principales de OWASP para APIs, más los ataques clásicos de inyección y métodos HTTP." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p6-h1" value="Un test por riesgo" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#B85450;" vertex="1" parent="1">
+          <mxGeometry x="60" y="92" width="800" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r1" value="&lt;b&gt;API1 · BOLA&lt;/b&gt;&lt;br&gt;Broken Object Level Authorization&lt;br&gt;El acceso cross-tenant devuelve 403" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="125" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r2" value="&lt;b&gt;API2 · Broken Authentication&lt;/b&gt;&lt;br&gt;JWT inválido o expirado → 401&lt;br&gt;Ciclo de vida: expiración en sesión, rotación y reuso de refresh tokens, revocación en logout, cambio de contraseña&lt;br&gt;Cripto: alg=none, confusión de algoritmo, firma manipulada, kid injection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="362" y="125" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r3" value="&lt;b&gt;API3 · Property Level Auth&lt;/b&gt;&lt;br&gt;Broken Object Property Level Authorization&lt;br&gt;El mass assignment no es posible" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="664" y="125" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r4" value="&lt;b&gt;API4 · Resource Consumption&lt;/b&gt;&lt;br&gt;Unrestricted Resource Consumption&lt;br&gt;El rate limiting devuelve 429" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="966" y="125" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r5" value="&lt;b&gt;API5 · Function Level Auth&lt;/b&gt;&lt;br&gt;Broken Function Level Authorization&lt;br&gt;Un no-admin no accede a endpoints de admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="125" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r6" value="&lt;b&gt;API6 · Sensitive Flows&lt;/b&gt;&lt;br&gt;Unrestricted Access to Sensitive Flows&lt;br&gt;El flujo de negocio no se puede saltar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="250" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r7" value="&lt;b&gt;API7 · SSRF&lt;/b&gt;&lt;br&gt;Server-Side Request Forgery&lt;br&gt;El servidor no sigue URLs proporcionadas por el usuario" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="362" y="250" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r8" value="&lt;b&gt;API8 · Misconfiguration&lt;/b&gt;&lt;br&gt;Security Misconfiguration&lt;br&gt;Sin stack traces, sin versión del servidor, CORS correcto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="664" y="250" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r9" value="&lt;b&gt;API9 · Inventory Management&lt;/b&gt;&lt;br&gt;Improper Inventory Management&lt;br&gt;No hay endpoints indocumentados accesibles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="966" y="250" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-r10" value="&lt;b&gt;API10 · Unsafe Consumption&lt;/b&gt;&lt;br&gt;Unsafe Consumption of APIs&lt;br&gt;Las respuestas de APIs de terceros se validan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="250" width="280" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p6-h2" value="Tests adicionales" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#B85450;" vertex="1" parent="1">
+          <mxGeometry x="60" y="380" width="800" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-a1" value="&lt;b&gt;Inyección SQL&lt;/b&gt;&lt;br&gt;Enviar &lt;font color=&quot;#B85450&quot;&gt;1; DROP TABLE--&lt;/font&gt; en parámetros de consulta → no debe ejecutarse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="415" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-a2" value="&lt;b&gt;XSS&lt;/b&gt;&lt;br&gt;Enviar &lt;font color=&quot;#B85450&quot;&gt;&amp;lt;script&amp;gt;&lt;/font&gt; en parámetros → la respuesta debe ser JSON, no HTML" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="440" y="415" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-a3" value="&lt;b&gt;Path traversal&lt;/b&gt;&lt;br&gt;Enviar ../../../etc/passwd → debe devolver 404" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="415" width="350" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-a4" value="&lt;b&gt;Seguridad de métodos HTTP&lt;/b&gt;&lt;br&gt;POST o DELETE sobre un endpoint solo-GET → 405" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="415" width="350" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p6-gate" value="&lt;b&gt;GATE FASE 6&lt;/b&gt; — los 10 riesgos del OWASP API Top 10 están testeados, la inyección SQL no se ejecuta y ninguna respuesta de error contiene stack traces. Ningún hallazgo &lt;b&gt;high&lt;/b&gt; o &lt;b&gt;critical&lt;/b&gt; sobrevive a los escaneos de dependencias, secretos, SAST o al SBOM. Detalle: references/owasp-api-testing.md · references/tools-by-stack.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="520" width="1490" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6-note" value="Los tests dinámicos OWASP se ejecutan en el nivel &lt;b&gt;Full&lt;/b&gt; (nightly / pre-release) — salvo el subconjunto &lt;b&gt;SecurityPR&lt;/b&gt; (BOLA, ciclo de vida de la autenticación, inyección), que corre en cada PR.&lt;br&gt;Los cuatro &lt;b&gt;escaneos estáticos&lt;/b&gt; (dependencias, secretos, SAST, SBOM) no necesitan nada desplegado y son &lt;b&gt;gate bloqueante en cada PR&lt;/b&gt;: un secreto o una dependencia vulnerable se commitea una vez y permanece en el historial." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="620" width="1490" height="80" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg7" name="07 · Fases 7-9 — Rendimiento, cobertura y mutación">
+    <mxGraphModel dx="1600" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p7-title" value="Fases 7, 8 y 9 · Rendimiento, cobertura de código y mutation testing" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1400" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-sub" value="Tres formas complementarias de medir: cómo se comporta el sistema bajo carga, qué código ejecutan los tests y si los tests detectan realmente los fallos." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p7-h1" value="Fase 7 · Rendimiento (load testing)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#D79B00;" vertex="1" parent="1">
+          <mxGeometry x="50" y="92" width="470" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-m1" value="P50 &amp;lt; 500 ms" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="130" width="470" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-m2" value="P95 &amp;lt; 2000 ms (health) · &amp;lt; 5000 ms (consultas a BD)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="180" width="470" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-m3" value="P99 &amp;lt; 10000 ms" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="230" width="470" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-m4" value="Throughput &amp;gt; 20 peticiones/s" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="280" width="470" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-m5" value="Tasa de error &amp;lt; 0.1%" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="330" width="470" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-m6" value="Sin fugas de memoria tras 1000+ peticiones" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="380" width="470" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-t1" value="&lt;b&gt;Herramientas&lt;/b&gt;&lt;br&gt;HttpClient concurrente con Task.WhenAll (simple) · NBomber (escenarios avanzados) · k6 / locust.&lt;br&gt;Carga realista: 10–50 usuarios concurrentes." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="440" width="470" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-g1" value="&lt;b&gt;GATE FASE 7&lt;/b&gt;&lt;br&gt;P95 dentro del objetivo bajo la carga esperada · tasa de error &amp;lt; 0.1% · sin fugas de memoria." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="50" y="550" width="470" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p7-h2" value="Fase 8 · Cobertura de código" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="565" y="92" width="470" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-c1" value="Mide qué líneas del código de producción ejecutan los tests. Se fija un umbral mínimo y el &lt;b&gt;build falla&lt;/b&gt; si la cobertura cae por debajo: no es un informe pasivo, es un gate." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="565" y="130" width="470" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-code" value="&amp;lt;CollectCoverage&amp;gt;true&amp;lt;/CollectCoverage&amp;gt;&lt;br&gt;&amp;lt;CoverletOutputFormat&amp;gt;cobertura,opencover&amp;lt;/CoverletOutputFormat&amp;gt;&lt;br&gt;&amp;lt;Threshold&amp;gt;80&amp;lt;/Threshold&amp;gt;&lt;br&gt;&amp;lt;ThresholdType&amp;gt;line&amp;lt;/ThresholdType&amp;gt;&lt;br&gt;&amp;lt;ThresholdStat&amp;gt;total&amp;lt;/ThresholdStat&amp;gt;&lt;br&gt;&amp;lt;Exclude&amp;gt;[TestProject]*,*Migrations*&amp;lt;/Exclude&amp;gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e1e1e;strokeColor=#000000;fontColor=#e6e6e6;fontFamily=Courier;fontSize=10;align=left;spacingLeft=12;spacingTop=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="565" y="265" width="470" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-c2" value="&lt;b&gt;Herramientas&lt;/b&gt; — Coverlet + ReportGenerator (.NET) · @vitest/coverage-v8 / istanbul (Node) · coverage.py (Python).&lt;br&gt;Se excluyen migraciones y el propio proyecto de test." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="565" y="440" width="470" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-g2" value="&lt;b&gt;GATE FASE 8&lt;/b&gt;&lt;br&gt;Cobertura de líneas ≥ 80% y el build falla si baja del umbral." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="565" y="550" width="470" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p7-h3" value="Fase 9 · Mutation testing" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#9673A6;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="92" width="470" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-x1" value="Se muta el código de producción (cambiar &amp;gt; por ≥, eliminar condiciones, alterar constantes) y se comprueba si los tests detectan la mutación. Una mutación que &lt;b&gt;sobrevive&lt;/b&gt; indica que los tests no son efectivos." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="130" width="470" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-x2" value="&lt;b&gt;Interpretación del mutation score&lt;/b&gt;&lt;br&gt;≥ 80% — tests sólidos&lt;br&gt;60–79% — adecuado, con margen de mejora&lt;br&gt;&amp;lt; 60% — tests débiles: mejorar antes de publicar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="260" width="470" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-x3" value="&lt;b&gt;Qué mutar:&lt;/b&gt; controllers, services, repositories.&lt;br&gt;&lt;b&gt;Qué NO mutar:&lt;/b&gt; Program.cs, migraciones.&lt;br&gt;&lt;b&gt;Herramientas:&lt;/b&gt; Stryker.NET · Stryker.js · mutmut / cosmic-ray." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="385" width="470" height="145" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7-g3" value="&lt;b&gt;GATE FASE 9&lt;/b&gt;&lt;br&gt;Mutation score ≥ 60% para release (≥ 80% en sistemas críticos) y sin mutaciones supervivientes de alta severidad en rutas críticas." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="550" width="470" height="110" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg8" name="08 · Fase 10 — Estratificación y CI">
+    <mxGraphModel dx="1600" dy="960" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="960" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p8-title" value="Fase 10 · Estratificación de la suite de regresión" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1300" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-sub" value="La pirámide describe tipos de test; la estratificación describe cuándo y con qué frecuencia se ejecutan. Tres niveles con coste y cobertura crecientes." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p8-h1" value="Tres niveles" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="92" width="700" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-t1" value="&lt;b&gt;Smoke&lt;/b&gt; — ~30 s · en cada commit&lt;br&gt;Health endpoint devuelve 200 · Swagger accesible · login con credenciales válidas · un camino feliz por endpoint crítico.&lt;br&gt;&lt;i&gt;Solo caminos críticos, nada de E2E.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="125" width="490" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-t2" value="&lt;b&gt;Regression&lt;/b&gt; — ~5 min · en cada PR&lt;br&gt;Todos los tests unitarios · todos los escenarios BDD · integración (in-memory + live) · property-based · concurrencia e idempotencia · el subconjunto SecurityPR (BOLA, autenticación, inyección).&lt;br&gt;&lt;i&gt;Rendimiento y el resto de la seguridad quedan fuera, para no ralentizar el feedback.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="555" y="125" width="490" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-t3" value="&lt;b&gt;Full&lt;/b&gt; — ~15 min · nightly / pre-release&lt;br&gt;Todo lo de Regression + la suite de seguridad completa (OWASP Top 10) + los escaneos estáticos (dependencias, secretos, SAST, SBOM) + rendimiento + mutation testing.&lt;br&gt;&lt;i&gt;Validación completa antes de cada release.&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="125" width="490" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p8-h2" value="Categorización por stack" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="305" width="700" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-c1" value="&lt;b&gt;.NET — traits de xUnit&lt;/b&gt;&lt;br&gt;[Trait(&quot;Category&quot;, &quot;Smoke&quot;)] · [Trait(&quot;Category&quot;, &quot;Concurrency&quot;)]&lt;br&gt;[Trait(&quot;Category&quot;, &quot;SecurityPR&quot;)] · [Trait(&quot;Category&quot;, &quot;Security&quot;)]&lt;br&gt;&lt;br&gt;dotnet test --filter &quot;Category=Smoke&quot;&lt;br&gt;dotnet test --filter &quot;Category!=Security&amp;amp;Category!=Performance&quot; &lt;i&gt;(incluye SecurityPR)&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e1e1e;strokeColor=#000000;fontColor=#e6e6e6;fontFamily=Courier;fontSize=10;align=left;spacingLeft=12;spacingTop=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="490" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-c2" value="&lt;b&gt;Node.js / TS — Vitest&lt;/b&gt;&lt;br&gt;describe(&#39;Smoke&#39;, ...) · describe(&#39;Concurrency&#39;, ...)&lt;br&gt;describe(&#39;SecurityPR&#39;, ...) · describe(&#39;Security&#39;, ...)&lt;br&gt;&lt;br&gt;npx vitest run --testNamePattern &quot;Smoke&quot;&lt;br&gt;npx vitest run --testNamePattern &quot;^(?!.*(Security(?!PR)|Performance))&quot;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e1e1e;strokeColor=#000000;fontColor=#e6e6e6;fontFamily=Courier;fontSize=10;align=left;spacingLeft=12;spacingTop=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="555" y="340" width="490" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-c3" value="&lt;b&gt;Python — marcadores de pytest&lt;/b&gt;&lt;br&gt;@pytest.mark.smoke · @pytest.mark.concurrency&lt;br&gt;@pytest.mark.securitypr · @pytest.mark.security&lt;br&gt;&lt;br&gt;pytest -m smoke&lt;br&gt;pytest -m &quot;not security and not performance&quot; &lt;i&gt;(incluye securitypr)&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e1e1e;strokeColor=#000000;fontColor=#e6e6e6;fontFamily=Courier;fontSize=10;align=left;spacingLeft=12;spacingTop=8;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="340" width="490" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p8-h3" value="Ejecución local y en CI" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="540" width="700" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-s1" value="&lt;b&gt;Scripts del repositorio&lt;/b&gt;&lt;br&gt;./run-tests.sh -s Smoke | Regression | Full | Coverage | Mutation&lt;br&gt;· --mutation-threshold 60 &amp;nbsp;·&amp;nbsp; --enforce-budget (falla si el tier excede 30 s / 5 min / 15 min) &amp;nbsp;·&amp;nbsp; --project &lt;font color=&quot;#00A0A0&quot;&gt;&lt;ruta .csproj&gt;&lt;/font&gt;&lt;br&gt;PowerShell: .\run-tests.ps1 -Stage Smoke ... -EnforceBudget&lt;br&gt;El script autodetecta el stack (.NET, Node.js, Python)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="575" width="730" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-s2" value="&lt;b&gt;Integración en el pipeline&lt;/b&gt;&lt;br&gt;Cada commit dispara Smoke; cada PR dispara Regression; el merge a main y la ejecución nightly disparan Full. Cobertura y mutación pueden ser etapas independientes según el script.&lt;br&gt;Ejemplos de GitHub Actions y Azure DevOps en references/test-pyramid.md." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="575" width="740" height="140" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p8-n1" value="commit" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="770" width="180" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-n2" value="&lt;b&gt;Smoke&lt;/b&gt;&lt;br&gt;~30 s" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="770" width="180" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-n3" value="PR" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="770" width="180" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-n4" value="&lt;b&gt;Regression&lt;/b&gt;&lt;br&gt;~5 min" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="720" y="770" width="180" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-n5" value="nightly / release" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="940" y="770" width="180" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-n6" value="&lt;b&gt;Full&lt;/b&gt;&lt;br&gt;~15 min" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="770" width="180" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-f1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p8-n1" target="p8-n2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-f2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p8-n2" target="p8-n3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-f3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p8-n3" target="p8-n4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-f4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p8-n4" target="p8-n5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8-f5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#374151;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p8-n5" target="p8-n6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p8-gate" value="&lt;b&gt;GATE FASE 10&lt;/b&gt; — Smoke pasa en cada commit · Regression pasa en cada PR · Full pasa antes de cada release · cada tier respeta su presupuesto de duración (--enforce-budget). Nunca meter tests de seguridad completos o E2E en el nivel Smoke, ni dejar sin ejecución nightly la rama principal." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=left;spacingLeft=14;fontSize=11;fontColor=#7F6000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="862" width="1490" height="70" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg9" name="09 · Fase 11 — Producción">
+    <mxGraphModel dx="1600" dy="1180" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1180" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p9-title" value="Fase 11 · Calidad en producción" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1200" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-sub" value="Checklist de pre-producción con firma, SLOs monitorizados con alertas, validación post-despliegue y plan de rollback. Fuente: assets/pre-production-checklist.md" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p9-h1" value="Checklist pre-producción — todo debe estar marcado antes de desplegar" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="92" width="1000" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-k1" value="&lt;b&gt;Spec y revisión&lt;/b&gt;&lt;br&gt;Spec aprobada por product owner y arquitecto&lt;br&gt;Criterios de aceptación verificados&lt;br&gt;Code review aprobado por un par&lt;br&gt;Preguntas abiertas de la spec resueltas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="125" width="490" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-k2" value="&lt;b&gt;Tests&lt;/b&gt;&lt;br&gt;Todos los unitarios pasan · cobertura ≥ 80%&lt;br&gt;Casos límite cubiertos (null, vacío, frontera)&lt;br&gt;Sin tests saltados sin motivo documentado&lt;br&gt;BDD, integración y property tests en verde&lt;br&gt;Matriz endpoint × tenant completa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="555" y="125" width="490" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-k3" value="&lt;b&gt;Seguridad y configuración&lt;/b&gt;&lt;br&gt;Sin secretos en el código (vault o variables de entorno)&lt;br&gt;Sin stack traces en las respuestas de error&lt;br&gt;OpenAPI completo y exacto · rate limiting probado&lt;br&gt;Logging sin datos sensibles · CORS no AllowAll&lt;br&gt;Caducidad de JWT · HTTPS forzado · cabeceras de seguridad" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="125" width="490" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-k4" value="&lt;b&gt;Base de datos&lt;/b&gt;&lt;br&gt;Migraciones reversibles y probadas en staging&lt;br&gt;Cadenas de conexión por variables de entorno o vault&lt;br&gt;Sin SQL hardcodeado fuera de la capa de repositories" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="490" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-k5" value="&lt;b&gt;Despliegue y rollback&lt;/b&gt;&lt;br&gt;Plan de rollback documentado y probado en staging&lt;br&gt;Script de despliegue versionado en el repositorio&lt;br&gt;Health check correcto tras el despliegue&lt;br&gt;Smoke tests post-despliegue listos para ejecutar" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="555" y="340" width="490" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-k6" value="&lt;b&gt;Monitorización y observabilidad&lt;/b&gt;&lt;br&gt;Logging estructurado (JSON con correlation ID)&lt;br&gt;Health checks con comprobación de conectividad a BD&lt;br&gt;Alertas configuradas según los SLOs (abajo)&lt;br&gt;Dashboard creado para las métricas clave" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="340" width="490" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p9-h2" value="SLOs de producción y umbrales de alerta" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="570" width="1000" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-s1" value="&lt;b&gt;Disponibilidad&lt;/b&gt; — objetivo 99.9%  ·  &lt;font color=&quot;#B85450&quot;&gt;alerta si &amp;lt; 99.5% durante 5 min&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="605" width="1490" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-s2" value="&lt;b&gt;Latencia P95&lt;/b&gt; — objetivo &amp;lt; 2 s  ·  &lt;font color=&quot;#B85450&quot;&gt;alerta si &amp;gt; 5 s durante 5 min&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="655" width="1490" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-s3" value="&lt;b&gt;Tasa de error&lt;/b&gt; — objetivo &amp;lt; 0.1%  ·  &lt;font color=&quot;#B85450&quot;&gt;alerta si &amp;gt; 1% durante 5 min&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="705" width="1490" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-s4" value="&lt;b&gt;Rate limit hits&lt;/b&gt; — objetivo &amp;lt; 5% de las peticiones  ·  &lt;font color=&quot;#B85450&quot;&gt;alerta si &amp;gt; 10% durante 10 min&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="755" width="1490" height="46" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p9-h3" value="Validación post-despliegue" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="820" width="700" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-h4" value="Firma / sign-off" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="820" y="820" width="700" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-v1" value="1 · Ejecutar smoke tests contra el endpoint de producción inmediatamente después del despliegue&lt;br&gt;2 · Vigilar la tasa de error durante 15 minutos&lt;br&gt;3 · Vigilar la latencia P95 durante 15 minutos&lt;br&gt;4 · Comprobar que el health endpoint responde healthy&lt;br&gt;5 · Verificar que Swagger es accesible (si aplica)&lt;br&gt;6 · Plan de rollback listo: si cualquier métrica se degrada, rollback en menos de 5 minutos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="855" width="730" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="p9-v2" value="&lt;b&gt;Product Owner&lt;/b&gt; — nombre · fecha · firma&lt;br&gt;&lt;b&gt;Tech Lead&lt;/b&gt; — nombre · fecha · firma&lt;br&gt;&lt;b&gt;QA Lead&lt;/b&gt; — nombre · fecha · firma&lt;br&gt;&lt;b&gt;DevOps&lt;/b&gt; — nombre · fecha · firma" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="855" width="740" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p9-o1" value="&lt;b&gt;Opciones recomendadas para producción (prioridad alta → baja)&lt;/b&gt;&lt;br&gt;&lt;b&gt;Alta&lt;/b&gt; — observabilidad (OpenTelemetry, Serilog, Application Insights) · health checks con conectividad a BD · logging estructurado con correlation ID · gestión de secretos (Key Vault, Secrets Manager)&lt;br&gt;&lt;b&gt;Media&lt;/b&gt; — API gateway con rate limiting y validación · WAF (Azure Front Door, Cloudflare) · DAST (OWASP ZAP, Burp Suite) · escaneo de dependencias (Dependabot, Snyk, Trivy) · escaneo de contenedores · SAST (SonarQube, analizadores Roslyn)&lt;br&gt;&lt;b&gt;Baja&lt;/b&gt; — contract testing (Pact) · chaos engineering (Chaos Mesh, Gremlin) · despliegues canary (Flagger, Argo Rollouts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1045" width="1500" height="110" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="pg10" name="10 · Prácticas transversales y anti-patrones">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="p10-title" value="Prácticas transversales a todas las fases" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1200" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-sub" value="Una suite de tests solo vale lo que vale su fiabilidad y su mantenibilidad en el tiempo. Fuente: references/quality-engineering-practices.md" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#4b5563;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1500" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p10-h1" value="Gestión de tests flaky" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="92" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-f1" value="&lt;b&gt;Timing / condiciones de carrera&lt;/b&gt;&lt;br&gt;&lt;i&gt;Detección:&lt;/i&gt; pasa solo, falla en paralelo&lt;br&gt;&lt;i&gt;Arreglo:&lt;/i&gt; esperas deterministas y polling con await; evitar Task.Delay(500)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="125" width="280" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-f2" value="&lt;b&gt;Estado compartido entre tests&lt;/b&gt;&lt;br&gt;&lt;i&gt;Detección:&lt;/i&gt; pasan aislados, fallan en la ejecución completa&lt;br&gt;&lt;i&gt;Arreglo:&lt;/i&gt; estado fresco por test (fixtures / reset), sin estáticos ni filas compartidas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="362" y="125" width="280" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-f3" value="&lt;b&gt;Datos de BD sin orden&lt;/b&gt;&lt;br&gt;&lt;i&gt;Detección:&lt;/i&gt; aserciones sobre First()&lt;br&gt;&lt;i&gt;Arreglo:&lt;/i&gt; consultar con ORDER BY explícito y aseverar sobre el conjunto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="664" y="125" width="280" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-f4" value="&lt;b&gt;Dependencia de un servicio externo&lt;/b&gt;&lt;br&gt;&lt;i&gt;Detección:&lt;/i&gt; falla cuando el servicio va lento o está caído&lt;br&gt;&lt;i&gt;Arreglo:&lt;/i&gt; contract testing, y stub en los tests funcionales" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="966" y="125" width="280" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-f5" value="&lt;b&gt;Contención de puertos / recursos&lt;/b&gt;&lt;br&gt;&lt;i&gt;Detección:&lt;/i&gt; solo falla bajo carga&lt;br&gt;&lt;i&gt;Arreglo:&lt;/i&gt; aislar el entorno de test; puertos y colas únicos por ejecución" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="125" width="280" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p10-h2" value="Gestión de datos de test" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="300" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-d1" value="&lt;b&gt;Principios&lt;/b&gt;&lt;br&gt;Fábricas en código con valores por defecto explícitos en lugar de volcados SQL compartidos&lt;br&gt;Rollback transaccional o truncado por clase de test&lt;br&gt;Datos sembrados por tenant, para que las ejecuciones en paralelo no colisionen&lt;br&gt;Valores sintéticos (john@example.com), nunca PII copiada de producción" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="335" width="730" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-d2" value="&lt;b&gt;Anti-patrones de datos de test&lt;/b&gt;&lt;br&gt;Una única BD semilla gigante y compartida → los tests dependen de los datos de otros&lt;br&gt;Datos aleatorios con aspecto real commiteados en el repo → acoplamiento, deriva y riesgo de PII&lt;br&gt;Tests que crean datos llamando a la API en vivo → lentos y acoplados al comportamiento de la API&lt;br&gt;Datos de test mezclados con las migraciones de esquema → sorpresas de acoplamiento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="335" width="740" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p10-h3" value="Accesibilidad y regresión visual" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="505" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-a1" value="&lt;b&gt;Accesibilidad (a11y)&lt;/b&gt; — axe-core vía Playwright (@axe-core/playwright, pa11y) sobre cada ruta renderizada: navegación por teclado, lector de pantalla y contraste. Se ejecuta en el nivel Regression (cada PR) y falla ante cualquier violación nueva; el Smoke solo comprueba rutas críticas." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="540" width="730" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-a2" value="&lt;b&gt;Regresión visual&lt;/b&gt; — Playwright toHaveScreenshot() / Percy con viewports fijos (móvil 390 px, escritorio 1280 px). Enmascarar regiones dinámicas (fechas, avatares, ids) y aprobar los cambios intencionados actualizando la línea base, nunca ignorando los diffs." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=12;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="540" width="740" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p10-h4" value="Code review y Definition of Done" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="60" y="670" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-r1" value="&lt;b&gt;Checklist de code review&lt;/b&gt;&lt;br&gt;El cambio coincide con la spec aprobada y la actualiza si cambia el comportamiento&lt;br&gt;Tests orientados a comportamiento, no a implementación&lt;br&gt;Métodos públicos nuevos con tests unitarios; fronteras nuevas con tests de contrato o integración&lt;br&gt;Caminos de error y casos límite cubiertos, no solo el camino feliz&lt;br&gt;Sin secretos, cadenas de conexión ni tokens en el código o en los datos de test&lt;br&gt;El logging no captura datos sensibles&lt;br&gt;Los cambios de API o DTO se reflejan en el OpenAPI y en los consumidores&lt;br&gt;Migraciones reversibles y probadas contra una copia de datos de staging&lt;br&gt;Rutas sensibles al rendimiento con baseline o test de rendimiento marcado&lt;br&gt;Fronteras de confianza nuevas con abuse cases y threat model en la spec&lt;br&gt;Endpoints que cambian estado con su test de concurrencia" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="60" y="705" width="730" height="190" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-r2" value="&lt;b&gt;Definition of Done — una historia está terminada cuando:&lt;/b&gt;&lt;br&gt;La sección de la spec correspondiente está actualizada y revisada, con sus abuse cases&lt;br&gt;Los tests unitarios pasan con cobertura ≥ 80% en el código nuevo&lt;br&gt;Los escenarios BDD de los criterios de aceptación están añadidos y en verde&lt;br&gt;Hay tests de integración o contrato para las fronteras nuevas&lt;br&gt;Los endpoints que cambian estado se han disparado dos veces y en paralelo, con un solo efecto&lt;br&gt;Los tests de seguridad cubren los endpoints nuevos (auth, authz, inyección, sin stack traces)&lt;br&gt;Los escaneos de dependencias, secretos y SAST están limpios para el cambio&lt;br&gt;Se cumple el umbral de mutación en el área modificada&lt;br&gt;La funcionalidad se ha probado con smoke contra un entorno real, no solo in-memory&lt;br&gt;No se ha añadido ningún test a cuarentena y los ya en cuarentena están en verde&lt;br&gt;El tier donde cae el cambio sigue pasando dentro de su presupuesto&lt;br&gt;Documentación y OpenAPI actualizados · plan de rollback confirmado para el release" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fc;strokeColor=#9db8d9;align=left;spacingLeft=12;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="820" y="705" width="740" height="190" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="p10-h5" value="Anti-patrones a evitar" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#B85450;" vertex="1" parent="1">
+          <mxGeometry x="60" y="915" width="900" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x1" value="&lt;b&gt;Probar solo el camino feliz&lt;/b&gt;&lt;br&gt;Los bugs se esconden en los casos límite → probar null, vacío, negativo, desbordamiento y fronteras" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="950" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x2" value="&lt;b&gt;100% cobertura y 0% mutación&lt;/b&gt;&lt;br&gt;La cobertura no significa que los tests sean eficaces → ejecutar mutation testing para verificarlo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="362" y="950" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x3" value="&lt;b&gt;Todos los tests en una sola suite&lt;/b&gt;&lt;br&gt;Bucle de feedback lento → estratificar en Smoke, Regression y Full" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="664" y="950" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x4" value="&lt;b&gt;Solo tests de integración&lt;/b&gt;&lt;br&gt;Lentos, frágiles y esconden bugs de unidad → seguir la pirámide 70/20/10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="966" y="950" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x5" value="&lt;b&gt;Sin tests de seguridad&lt;/b&gt;&lt;br&gt;Producción será atacada → probar el OWASP API Top 10 antes de cada release" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="950" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x6" value="&lt;b&gt;Sin tests de rendimiento&lt;/b&gt;&lt;br&gt;Fallará bajo carga → medir la P95 con concurrencia realista" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1055" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x7" value="&lt;b&gt;Secretos en el código de test&lt;/b&gt;&lt;br&gt;Filtra credenciales → usar user secrets o variables de entorno" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="362" y="1055" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x8" value="&lt;b&gt;Testear detalles de implementación&lt;/b&gt;&lt;br&gt;Tests frágiles → testear comportamiento, no implementación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="664" y="1055" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x9" value="&lt;b&gt;Sin plan de rollback&lt;/b&gt;&lt;br&gt;No se puede recuperar un despliegue malo → documentar y probar el procedimiento" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="966" y="1055" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p10-x10" value="&lt;b&gt;Saltarse la spec&lt;/b&gt;&lt;br&gt;No hay fuente de verdad → escribir la spec primero y derivar todo de ella" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="1055" width="280" height="90" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

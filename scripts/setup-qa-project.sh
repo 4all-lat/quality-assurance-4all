@@ -6,10 +6,25 @@
 # Creates a test project with the recommended folder structure and installs
 # the QA packages for the requested stack.
 #
-# Usage:
+# --- usage ---
+# Usage: setup-qa-project.sh --name <name> --stack <stack> [options]
+#
+# Options:
+#   -n, --name <name>        project name (required)
+#   -s, --stack <stack>      dotnet | nodejs | python (required)
+#   -o, --output-dir <dir>   parent directory (default: .)
+#   -h, --help               show this message
+#
+# Exit codes:
+#   0  the project was scaffolded
+#   1  gate or environment failure (bad stack, target directory already exists)
+#   2  usage error (unknown flag, flag without a value, missing required flag)
+#
+# Examples:
 #   ./setup-qa-project.sh --name MyProject.Tests --stack dotnet
 #   ./setup-qa-project.sh -n my-project-tests -s nodejs
 #   ./setup-qa-project.sh -n my_project_tests -s python
+# --- end usage ---
 #
 set -euo pipefail
 
@@ -18,23 +33,34 @@ STACK=""
 OUTPUT_DIR="."
 
 usage() {
-  sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '/^# --- usage ---$/,/^# --- end usage ---$/p' "$0" | sed -e '1d' -e '$d' -e 's/^# \{0,1\}//'
   exit 0
+}
+
+# require_value <canonical-flag> <argc> — a flag that is the last argument has
+# no value. Exiting 2 keeps usage errors distinct from gate failures.
+require_value() {
+  if [[ "$2" -lt 2 ]]; then
+    echo "ERROR: $1 requires a value." >&2
+    echo "Run with --help for usage." >&2
+    exit 2
+  fi
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -n|--name) NAME="${2:-}"; shift 2 ;;
-    -s|--stack) STACK="${2:-}"; shift 2 ;;
-    -o|--output-dir) OUTPUT_DIR="${2:-}"; shift 2 ;;
+    -n|--name) require_value "--name" $#; NAME="$2"; shift 2 ;;
+    -s|--stack) require_value "--stack" $#; STACK="$2"; shift 2 ;;
+    -o|--output-dir) require_value "--output-dir" $#; OUTPUT_DIR="$2"; shift 2 ;;
     -h|--help) usage ;;
-    *) echo "ERROR: Unknown argument: $1" >&2; usage ;;
+    *) echo "ERROR: Unknown argument: $1" >&2; echo "Run with --help for usage." >&2; exit 2 ;;
   esac
 done
 
 if [[ -z "$NAME" || -z "$STACK" ]]; then
   echo "ERROR: --name and --stack are required." >&2
-  usage
+  echo "Run with --help for usage." >&2
+  exit 1
 fi
 case "$STACK" in
   dotnet|nodejs|python) ;;
@@ -48,6 +74,10 @@ if [[ -e "$PROJECT_PATH" ]]; then
 fi
 
 mkdir -p "$PROJECT_PATH"
+# Resolve to an absolute path before entering it: every step below writes
+# relative to the project, and a relative --output-dir would otherwise be
+# re-interpreted from inside the project and nest one level deeper.
+PROJECT_PATH="$(cd "$PROJECT_PATH" && pwd)"
 cd "$PROJECT_PATH"
 
 echo ""
@@ -59,7 +89,6 @@ echo ""
 if [[ "$STACK" == "dotnet" ]]; then
   echo "[1/4] Creating xUnit test project..."
   dotnet new xunit -n "$NAME" -o "$PROJECT_PATH"
-  cd "$PROJECT_PATH"
 
   echo "[2/4] Installing QA packages..."
   for pkg in \
@@ -76,17 +105,25 @@ if [[ "$STACK" == "dotnet" ]]; then
   done
 
   echo "[3/4] Installing global tools..."
+  # Read the listing into a variable instead of piping it into `grep -q`. Under
+  # `pipefail`, `dotnet tool list -g | grep -q` is a race: grep exits on the
+  # first match and the producer then dies of SIGPIPE, so the pipeline reports
+  # failure exactly when the tool *is* installed — and the script reinstalls it.
+  installed_tools="$(dotnet tool list -g 2>/dev/null || true)"
   for tool in dotnet-stryker dotnet-reportgenerator-globaltool; do
-    if dotnet tool list -g 2>/dev/null | grep -q "$tool"; then
-      echo "  - $tool (already installed)"
-    else
-      echo "  - $tool"
-      dotnet tool install -g "$tool"
-    fi
+    case "$installed_tools" in
+      *"$tool"*)
+        echo "  - $tool (already installed)"
+        ;;
+      *)
+        echo "  - $tool"
+        dotnet tool install -g "$tool"
+        ;;
+    esac
   done
 
   echo "[4/4] Creating folder structure..."
-  for folder in Features Integration Security Performance PropertyBased Controllers Services Repositories; do
+  for folder in Features Integration Concurrency Security Performance PropertyBased Controllers Services Repositories; do
     mkdir -p "$folder"
     echo "  - $folder/"
   done
@@ -128,7 +165,7 @@ export default defineConfig({
 EOF
 
   echo "[4/4] Creating folder structure..."
-  for folder in features integration security performance property-based unit; do
+  for folder in features integration concurrency security performance property-based unit; do
     mkdir -p "$folder"
     echo "  - $folder/"
   done
@@ -178,13 +215,15 @@ EOF
 markers =
     smoke: quick health check tests (run on every commit)
     regression: functional tests (run on every PR)
+    concurrency: races, retries and double-submit tests (run on every PR)
     security: security tests (OWASP API Top 10)
+    securitypr: BOLA/auth/injection subset that runs on every PR
     performance: performance/load tests
     property: property-based tests
 EOF
 
   echo "[4/4] Creating folder structure..."
-  for folder in features integration security performance property_based unit; do
+  for folder in features integration concurrency security performance property_based unit; do
     mkdir -p "$folder"
     touch "$folder/__init__.py"
     echo "  - $folder/"
@@ -202,6 +241,7 @@ echo "Recommended folder structure:"
 echo "  $NAME/"
 echo "    Features/          # BDD .feature files (Gherkin)"
 echo "    Integration/       # In-memory + live integration tests"
+echo "    Concurrency/       # Races, retries, idempotency (Regression tier)"
 echo "    Security/          # OWASP security tests"
 echo "    Performance/       # Load and latency tests"
 echo "    PropertyBased/     # Property-based / generative tests"
