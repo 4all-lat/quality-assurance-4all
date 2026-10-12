@@ -1,0 +1,85 @@
+# Gate the quality-assurance-4all scripts with their own test suite.
+#
+# The jobs are named after the tiers this repository prescribes, and they run
+# the same suite a developer runs locally: tests/run.sh needs nothing installed
+# because the external toolchains are replaced by PATH shims.
+
+name: QA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Smoke — documentation, parity, argument parsing
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the shell scripts with ShellCheck
+        run: |
+          shellcheck --version
+          shellcheck --severity=error \
+            scripts/*.sh \
+            tests/run.sh \
+            tests/lib/*.sh \
+            tests/shims/_recorder \
+            tests/cases/*.test.sh
+
+      - name: Check the documentation and the bash/PowerShell parity
+        run: |
+          tests/run.sh docs.links
+          tests/run.sh docs.thresholds
+          tests/run.sh docs.assets
+          tests/run.sh docs.diagrams
+          tests/run.sh parity
+
+      - name: Check the runner's argument parsing and exit codes
+        run: |
+          tests/run.sh scripts.syntax
+          tests/run.sh run-tests.argparse
+          tests/run.sh setup.argparse
+          tests/run.sh run-tests.budget
+
+  regression:
+    name: Regression — full script test suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run every case
+        run: QA_VERBOSE=1 tests/run.sh
+
+      - name: Show the exit-code contract
+        run: |
+          set +e
+          bash scripts/run-tests.sh -s smoke --bogus >/dev/null 2>&1; echo "unknown flag -> $? (expected 2)"
+          bash scripts/run-tests.sh -s >/dev/null 2>&1;            echo "missing value -> $? (expected 2)"
+          bash scripts/run-tests.sh -s bogus >/dev/null 2>&1;      echo "bad stage -> $? (expected 1)"
+
+  windows-parity:
+    name: Windows — dynamic bash/PowerShell parity
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that pwsh is present
+        shell: pwsh
+        run: $PSVersionTable.PSVersion
+
+      - name: Run the parity case against the real PowerShell
+        shell: bash
+        run: tests/run.sh parity
