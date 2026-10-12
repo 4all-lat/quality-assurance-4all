@@ -173,11 +173,34 @@ if command -v pwsh >/dev/null 2>&1; then
   # comparison passed while the dynamic one failed on every runner that has
   # pwsh. One extractor, one place to drift.
   sh_dynamic="$(sh_stages "$SH_RUN")"
-  ps_dynamic="$(pwsh -NoProfile -Command "
-    (Get-Command '$PS_RUN').Parameters['Stage'].Attributes |
-    Where-Object { \$_ -is [System.Management.Automation.ValidateSetAttribute] } |
-    ForEach-Object { \$_.ValidValues }" 2>/dev/null | tr 'A-Z' 'a-z' | sort -u)"
-  compare_sets "run-tests" "stages (dynamic)" "$sh_dynamic" "$ps_dynamic"
+
+  # Git Bash on Windows hands out POSIX paths, and the native PowerShell cannot
+  # open /d/a/.... Get-Command then returns nothing, and the comparison failed
+  # with an empty right-hand set — which reads like a divergence between the
+  # runners but is only a path that never arrived.
+  ps_target="$PS_RUN"
+  if command -v cygpath >/dev/null 2>&1; then
+    ps_target="$(cygpath -w "$PS_RUN")"
+  fi
+
+  # Handed over in the environment rather than interpolated into the command
+  # string, so a path with spaces or backslashes needs no quoting of its own.
+  ps_err="$(mktemp)"
+  ps_dynamic="$(QA_PS_RUN="$ps_target" pwsh -NoProfile -Command '
+    (Get-Command $env:QA_PS_RUN).Parameters["Stage"].Attributes |
+    Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] } |
+    ForEach-Object { $_.ValidValues }' 2>"$ps_err" | tr 'A-Z' 'a-z' | sort -u)"
+  ps_error="$(cat "$ps_err")"
+  rm -f "$ps_err"
+
+  # An empty set is not a divergence to be reported as one: it means pwsh was
+  # asked and did not answer, and the reason is worth printing.
+  if [[ -z "$ps_dynamic" ]]; then
+    _qa_fail "pwsh reports the PowerShell stage set" \
+      "${ps_error:-(no output and no error from pwsh)}"
+  else
+    compare_sets "run-tests" "stages (dynamic)" "$sh_dynamic" "$ps_dynamic"
+  fi
 else
   qa_skip "dynamic parity check: pwsh is not installed"
 fi
