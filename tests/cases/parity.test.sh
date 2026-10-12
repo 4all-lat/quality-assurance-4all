@@ -77,6 +77,16 @@ ps_stages() {
     tr 'A-Z' 'a-z' | sort -u
 }
 
+# Canonical form for a stage set, so the two sides of the dynamic check can be
+# compared. `sed`, `pwsh`, `tr` and `sort` are four different tools on a Windows
+# runner and they do not agree about line endings: a stage name carrying a
+# stray CR compares as a different name to one without, and the check reports a
+# divergence between two runners that agree. Strip the CR, lower-case, drop
+# blanks and de-duplicate.
+normalise_stages() {
+  tr -d '\r' | tr 'A-Z' 'a-z' | sed '/^$/d' | sort -u
+}
+
 # Flags from the bash argument loop, e.g. `-p|--project) ...`
 sh_flags() {
   sed -n '/while \[\[ \$# -gt 0 \]\]/,/^done$/p' "$1" |
@@ -172,7 +182,7 @@ if command -v pwsh >/dev/null 2>&1; then
   # and adding a sixth stage to the runner left it behind — the static
   # comparison passed while the dynamic one failed on every runner that has
   # pwsh. One extractor, one place to drift.
-  sh_dynamic="$(sh_stages "$SH_RUN")"
+  sh_dynamic="$(sh_stages "$SH_RUN" | normalise_stages)"
 
   # Git Bash on Windows hands out POSIX paths, and the native PowerShell cannot
   # open /d/a/.... Get-Command then returns nothing, and the comparison failed
@@ -185,11 +195,12 @@ if command -v pwsh >/dev/null 2>&1; then
 
   # Handed over in the environment rather than interpolated into the command
   # string, so a path with spaces or backslashes needs no quoting of its own.
+  # The script is a single line because Git Bash rewrites the argv it hands to a
+  # native Windows process, and a newline inside an argument is one more thing
+  # that can arrive altered.
   ps_err="$(mktemp)"
   ps_dynamic="$(QA_PS_RUN="$ps_target" pwsh -NoProfile -Command '
-    (Get-Command $env:QA_PS_RUN).Parameters["Stage"].Attributes |
-    Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] } |
-    ForEach-Object { $_.ValidValues }' 2>"$ps_err" | tr 'A-Z' 'a-z' | sort -u)"
+    (Get-Command $env:QA_PS_RUN).Parameters["Stage"].Attributes | Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] } | ForEach-Object { $_.ValidValues }' 2>"$ps_err" | normalise_stages)"
   ps_error="$(cat "$ps_err")"
   rm -f "$ps_err"
 
@@ -199,6 +210,14 @@ if command -v pwsh >/dev/null 2>&1; then
     _qa_fail "pwsh reports the PowerShell stage set" \
       "${ps_error:-(no output and no error from pwsh)}"
   else
+    # Both sets in full, before the item-by-item difference. This check has to
+    # be diagnosable from the CI log alone: three failures in a row were spent
+    # working out whether the two sides disagreed about a name, a count or a
+    # byte.
+    if [[ "$sh_dynamic" != "$ps_dynamic" ]]; then
+      _qa_fail "the dynamic stage sets, in full" \
+        "bash=[$(printf '%s' "$sh_dynamic" | tr '\n' ',')] pwsh=[$(printf '%s' "$ps_dynamic" | tr '\n' ',')]"
+    fi
     compare_sets "run-tests" "stages (dynamic)" "$sh_dynamic" "$ps_dynamic"
   fi
 else
