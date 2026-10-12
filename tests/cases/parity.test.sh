@@ -167,7 +167,12 @@ fi
 # --- optional: run the real PowerShell against the real bash ----------------
 
 if command -v pwsh >/dev/null 2>&1; then
-  sh_dynamic="$(grep -oE '^\s+(smoke|regression|full|coverage|mutation)\)' "$SH_RUN" | tr -d ' )' | sort -u)"
+  # The bash side comes from the same extractor the static check uses, not from
+  # a second literal list: this line used to enumerate the stages in a regex,
+  # and adding a sixth stage to the runner left it behind — the static
+  # comparison passed while the dynamic one failed on every runner that has
+  # pwsh. One extractor, one place to drift.
+  sh_dynamic="$(sh_stages "$SH_RUN")"
   ps_dynamic="$(pwsh -NoProfile -Command "
     (Get-Command '$PS_RUN').Parameters['Stage'].Attributes |
     Where-Object { \$_ -is [System.Management.Automation.ValidateSetAttribute] } |
