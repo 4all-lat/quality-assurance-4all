@@ -3,8 +3,12 @@
 #
 # `bash -n` is the one check that can run everywhere with nothing installed, and
 # it catches the failure mode that matters most in a gate script: a syntax error
-# that turns a failing pipeline into a passing one. It is not a substitute for
-# shellcheck in CI, which finds real bugs this cannot.
+# that turns a failing pipeline into a passing one. It is not a substitute for the
+# ShellCheck pass in CI, which finds real bugs this cannot.
+#
+# The paragraph above is wrapped so that no line begins with the word
+# "shellcheck": ShellCheck reads that as a directive, and a comment opening with
+# it fails the very pass this file is describing, as SC1072/SC1073.
 set -uo pipefail
 
 QA_TESTS_DIR="${QA_TESTS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
