@@ -3,7 +3,7 @@
     Stratified test runner for the QA pipeline.
 
 .DESCRIPTION
-    Runs tests in tiers (Smoke, Regression, Full) with optional Coverage and Mutation stages.
+    Runs tests in tiers (Smoke, Regression, Full) with optional Coverage, Mutation and Sonar stages.
     Designed for .NET projects using xUnit with [Trait("Category", "...")] categorization.
 
     - Smoke:      ~30s, every commit. Health, swagger, auth login.
@@ -11,9 +11,12 @@
     - Full:       ~15min, nightly/pre-release. + security + performance + mutation.
     - Coverage:   Generate coverage report only.
     - Mutation:   Run mutation testing only.
+    - Sonar:      Static analysis and the SonarQube quality gate. Needs SONAR_PROJECT_KEY,
+                  and SONAR_TOKEN for a server that asks for one. Coverage, Mutation and
+                  Sonar are untiered: they are tools, not tiers.
 
 .PARAMETER Stage
-    The test stage to run. One of: Smoke, Regression, Full, Coverage, Mutation.
+    The test stage to run. One of: Smoke, Regression, Full, Coverage, Mutation, Sonar.
 
 .PARAMETER Project
     Path to the test .csproj file. If not specified, searches for *.Tests.csproj in current directory.
@@ -49,13 +52,17 @@
     Runs Stryker.NET mutation testing.
 
 .EXAMPLE
+    .\run-tests.ps1 -Stage Sonar
+    Runs the SonarScanner for .NET and waits for the quality gate verdict.
+
+.EXAMPLE
     .\run-tests.ps1 -Stage Full -Project .\src\MyProject.Tests\MyProject.Tests.csproj
     Runs the full suite against a specific test project.
 #>
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("Smoke", "Regression", "Full", "Coverage", "Mutation")]
+    [ValidateSet("Smoke", "Regression", "Full", "Coverage", "Mutation", "Sonar")]
     [string]$Stage,
 
     [Parameter(Mandatory = $false)]
@@ -228,6 +235,43 @@ switch ($Stage) {
         $success = $LASTEXITCODE -eq 0
         $duration = ((Get-Date) - $start).ToString("mm\:ss")
         Write-StageResult "Mutation" $success $duration
+        if (-not $success) { $overallSuccess = $false }
+    }
+
+    "Sonar" {
+        # A project key is required: without it the scanner would analyze against
+        # an empty key and report a gate verdict for a project that does not
+        # exist — a green light for nothing.
+        if (-not $env:SONAR_PROJECT_KEY) {
+            Write-Host "ERROR: the Sonar stage requires SONAR_PROJECT_KEY to be set." -ForegroundColor Red
+            exit 1
+        }
+
+        Write-StageHeader "Sonar" "Static analysis and the quality gate (SonarQube)"
+        Ensure-Tool "dotnet-sonarscanner"
+        $start = Get-Date
+
+        # The .NET scanner wraps the build — begin, build, test, end. That is why
+        # this stage builds and tests instead of only analyzing: the coverage
+        # report the gate measures has to be produced between begin and end.
+        dotnet sonarscanner begin "/k:$env:SONAR_PROJECT_KEY" "/d:sonar.qualitygate.wait=true" "/d:sonar.cs.cobertura.reportsPaths=$OutputDir/**/coverage.cobertura.xml"
+        $success = $LASTEXITCODE -eq 0
+
+        if ($success) {
+            dotnet build
+            $success = $LASTEXITCODE -eq 0
+        }
+        if ($success) {
+            dotnet test $testProject --collect:"XPlat Code Coverage" --results-directory $OutputDir
+            $success = $LASTEXITCODE -eq 0
+        }
+        if ($success) {
+            dotnet sonarscanner end
+            $success = $LASTEXITCODE -eq 0
+        }
+
+        $duration = ((Get-Date) - $start).ToString("mm\:ss")
+        Write-StageResult "Sonar" $success $duration
         if (-not $success) { $overallSuccess = $false }
     }
 }

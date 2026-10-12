@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sandbox helpers: throwaway project fixtures and PATH shims for the external
-# toolchains (dotnet / npm / python / stryker / reportgenerator).
+# toolchains (dotnet / npm / python / stryker / reportgenerator / sonar-scanner).
 #
 # The suite never invokes a real toolchain. Every external command the scripts
 # under test call is intercepted by a recorder shim, so the tests assert on the
@@ -27,7 +27,7 @@ install_shims() {
   local bindir="$QA_SANDBOX/bin"
   mkdir -p "$bindir"
   local shim
-  for shim in dotnet npm npx python3 python pytest reportgenerator stryker; do
+  for shim in dotnet npm npx python3 python pytest reportgenerator stryker sonar-scanner; do
     ln -sf "$QA_TESTS_DIR/shims/_recorder" "$bindir/$shim"
   done
   SHIM_LOG="$QA_SANDBOX/shims.log"

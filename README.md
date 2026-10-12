@@ -1,6 +1,6 @@
 # Quality Assurance 4All Skill
 
-End-to-end QA pipeline guide from spec to production. Covers TDD, BDD, SDD, threat modeling and abuse cases, property-based testing, mutation testing, security testing (dynamic and static scanning), concurrency and idempotency testing, accessibility and visual regression, performance testing, code coverage, and regression suite stratification with enforced tier budgets.
+End-to-end QA pipeline guide from spec to production. Covers TDD, BDD, SDD, threat modeling and abuse cases, property-based testing, mutation testing, security testing (dynamic and static scanning), static analysis with a SonarQube quality gate, concurrency and idempotency testing, accessibility and visual regression, performance testing, code coverage, and regression suite stratification with enforced tier budgets.
 
 ## What This Skill Provides
 
@@ -15,7 +15,7 @@ The skill defines **11 phases** organized as a quality pyramid:
 | 3. Behavior | BDD (Behavior-Driven Development) | All acceptance criteria covered |
 | 4. Integration | Test Pyramid (70/20/10) | All endpoints x tenants tested |
 | 5. Edge Cases | Property-Based Testing | 200+ random cases per property |
-| 6. Security | OWASP API Top 10 + static scans | All 10 risks tested; scans clean |
+| 6. Security | OWASP API Top 10 + static scans | All 10 risks tested; scans clean; quality gate green |
 | 7. Performance | Load Testing | P95 < 2000ms, error rate < 0.1% |
 | 8. Coverage | Code Coverage | >= 80% line coverage |
 | 9. Mutation | Mutation Testing | >= 60% mutation score |
@@ -79,6 +79,7 @@ For the stratified test runner (cross-platform bash, or PowerShell on Windows):
 ./scripts/run-tests.sh -s Full        # Everything including perf + security (~15min)
 ./scripts/run-tests.sh -s Coverage    # Generate coverage report
 ./scripts/run-tests.sh -s Mutation    # Run mutation testing
+./scripts/run-tests.sh -s Sonar       # Static analysis + the SonarQube quality gate
 ```
 
 ```powershell
@@ -87,6 +88,7 @@ For the stratified test runner (cross-platform bash, or PowerShell on Windows):
 .\scripts\run-tests.ps1 -Stage Full        # Everything including perf + security (~15min)
 .\scripts\run-tests.ps1 -Stage Coverage    # Generate coverage report
 .\scripts\run-tests.ps1 -Stage Mutation    # Run mutation testing
+.\scripts\run-tests.ps1 -Stage Sonar       # Static analysis + the SonarQube quality gate
 ```
 
 ## Directory Structure
@@ -104,11 +106,13 @@ quality-assurance-4all/
     performance-testing.md  # Performance testing with code examples
     concurrency-and-idempotency.md # Races, retries, double submit, replay, keyset paging
     quality-engineering-practices.md # Flaky, test data, a11y, visual regression, DoD
+    sonarqube.md            # Static analysis platform and the quality gate
   assets/               # Reusable templates and config snippets
     ai-spec-template.md     # AI Spec / Feature Spec template
     bdd-feature-template.feature  # Gherkin BDD scenario template
     pre-production-checklist.md   # Pre-production quality checklist
     coverage-config.xml     # Coverlet coverage configuration snippet
+    sonar-quality-gate.json # The SonarQube gate conditions, kept in step with the thresholds
   scripts/              # Working scripts for CI and project setup
     run-tests.sh            # Stratified test runner (bash, cross-platform)
     run-tests.ps1           # Stratified test runner (PowerShell, .NET-only)
@@ -137,8 +141,9 @@ tests/run.sh parity          # only the bash <-> PowerShell parity contract
 It pins down the runner's exit-code contract (`0` success · `1` gate failure ·
 `2` usage error), the exact command line each stack and stage produces, the
 scaffolder's generated tree, the documented thresholds (a single canonical table
-in `references/quality-gates.md`), and the bash/PowerShell parity of stages,
-flags and thresholds. See [`tests/README.md`](tests/README.md).
+in `references/quality-gates.md`, which the SonarQube gate conditions in
+`assets/sonar-quality-gate.json` must match), and the bash/PowerShell parity of
+stages, flags and thresholds. See [`tests/README.md`](tests/README.md).
 
 ## Stacks Supported
 
@@ -148,8 +153,9 @@ flags and thresholds. See [`tests/README.md`](tests/README.md).
 | Node.js/TS | Vitest / Jest | Cucumber.js | fast-check | @vitest/coverage-v8 / istanbul | Stryker.js |
 | Python | pytest | Behave | Hypothesis | coverage.py | mutmut / cosmic-ray |
 
-Concurrency, security scanning and UI quality (accessibility, visual regression) are documented per
-stack in [`references/tools-by-stack.md`](references/tools-by-stack.md).
+Concurrency, security scanning, static analysis with a SonarQube quality gate, and UI quality
+(accessibility, visual regression) are documented per stack in
+[`references/tools-by-stack.md`](references/tools-by-stack.md).
 
 ## Quality Pyramid
 

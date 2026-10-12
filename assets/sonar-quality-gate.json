@@ -1,0 +1,44 @@
+{
+  "_comment": "The SonarQube quality gate this skill expects, as data. It is a copy of the numeric rows in references/quality-gates.md#canonical-thresholds, not a second source: tests/cases/docs.thresholds.test.sh fails when the two disagree. Apply it with the API calls in references/sonarqube.md rather than by hand in the UI.",
+  "name": "QA 4All — canonical",
+  "source_of_truth": "references/quality-gates.md#canonical-thresholds",
+  "scope": "new-code",
+  "conditions": [
+    {
+      "metric": "coverage",
+      "op": "LT",
+      "error": "80",
+      "means": "Line coverage on new code >= 80%"
+    },
+    {
+      "metric": "duplicated_lines_density",
+      "op": "GT",
+      "error": "3",
+      "means": "Duplicated lines on new code <= 3%"
+    },
+    {
+      "metric": "security_hotspots_reviewed",
+      "op": "LT",
+      "error": "100",
+      "means": "Security hotspots reviewed on new code = 100%"
+    },
+    {
+      "metric": "new_maintainability_rating",
+      "op": "GT",
+      "error": "1",
+      "means": "Maintainability rating on new code = A"
+    },
+    {
+      "metric": "new_reliability_rating",
+      "op": "GT",
+      "error": "1",
+      "means": "Reliability rating on new code = A"
+    },
+    {
+      "metric": "new_security_rating",
+      "op": "GT",
+      "error": "1",
+      "means": "Security rating on new code = A"
+    }
+  ]
+}

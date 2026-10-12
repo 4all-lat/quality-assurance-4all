@@ -108,6 +108,25 @@ every PR rather than at release only. The checklist records their state at sign-
 - [ ] **Container image scanned**, if the service ships in a container
 - [ ] **`Medium` findings triaged** — each has an owner and a date, or a written acceptance
 
+## Static Analysis & Quality Gate (SonarQube)
+
+The static-analysis platform aggregates the reports above and adds the one family of metrics no
+other section measures: duplication, cognitive complexity and the ratings of the changed code. The
+quality gate must reproduce the canonical thresholds — it does not define them. Setup:
+[`references/sonarqube.md`](../references/sonarqube.md).
+
+- [ ] **Gate created from `assets/sonar-quality-gate.json`** through the API, so a fresh server gets the same gate instead of a hand-made one
+- [ ] **Gate conditions match the canonical table** — `assets/sonar-quality-gate.json` and `references/quality-gates.md` agree
+- [ ] **The analysis fails the build when the gate fails** — `sonar.qualitygate.wait=true`, so a queued analysis is never reported as a pass
+- [ ] **Coverage report produced inside the analysis window** — inside `begin`/`end` for .NET; a report from an earlier run is not picked up and the gate measures 0%
+- [ ] **New-code scope configured**, so the gate applies to the change and not to the whole legacy codebase
+- [ ] **Duplication and complexity reviewed** on the changed files — the gate enforces the number, a human reads the reason
+- [ ] **Security hotspots reviewed at 100%** on the new code; each closed with a reason, not a bulk dismissal
+- [ ] **Every surviving finding has an owner and a date** — "won't fix" without either is not a waiver
+- [ ] **Gate is a required check** on the default branch
+- [ ] **Edition limits acknowledged** — on the Community Edition the gate runs on the main branch and cannot decorate a PR
+- [ ] **The dynamic OWASP suite still ran** — a green gate is not a substitute for the security tests
+
 ## Performance Tests
 
 - [ ] **P50 latency < 500ms**
@@ -198,6 +217,12 @@ SLO targets and alert thresholds are consolidated in [`references/quality-gates.
 ---
 
 ## Sign-off
+
+The signatures below attest to the state of **this commit**, not of an earlier one: the quality gate
+and the tier budgets are read from the run against the commit that is being released.
+
+- [ ] **Quality gate green on the release commit** — SonarQube's gate passed on this revision
+- [ ] **Tier budgets green on the release commit** — Smoke, Regression and Full ran within budget
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|

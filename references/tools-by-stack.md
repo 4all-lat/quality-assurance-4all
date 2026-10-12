@@ -101,6 +101,32 @@ These drive a running system, so they belong to the Full tier.
 </PropertyGroup>
 ```
 
+### Static Analysis Platform (SonarQube)
+
+Not a phase and not a test runner: it consumes the coverage report from Phase 8, reads the source
+like the scans above, and adds what none of them measure — duplicated lines, cognitive complexity,
+code smells and the maintainability rating of the changed code. The edition choice, the quality gate
+and the per-stack wiring are in [`sonarqube.md`](sonarqube.md).
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| SonarScanner for .NET | Analysis wrapped around the build — it cannot analyze C# without the `begin`/`end` pair | `dotnet tool install -g dotnet-sonarscanner` |
+| `sonar.qualitygate.wait=true` | Make the build fail when the gate fails, instead of reporting success while the analysis is still queued server-side | Passed on `begin` |
+
+```bash
+# What `run-tests.sh -s Sonar` runs. SONAR_TOKEN and SONAR_HOST_URL come from the
+# environment; the scanner reads both, so neither appears on a command line.
+dotnet sonarscanner begin /k:"$SONAR_PROJECT_KEY" \
+  /d:sonar.qualitygate.wait=true \
+  /d:sonar.cs.cobertura.reportsPaths="./test-results/**/coverage.cobertura.xml"
+dotnet build
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./test-results
+dotnet sonarscanner end
+```
+
+The coverage report has to be produced **inside** that window — Coverlet's output from an earlier
+`-s Coverage` run is not picked up, and the gate then measures 0%.
+
 ### Test Categorization
 
 ```csharp
@@ -253,6 +279,25 @@ See [`concurrency-and-idempotency.md`](concurrency-and-idempotency.md) for the s
 // eslint.config.js — security rules as errors, not warnings, so CI fails
 import security from 'eslint-plugin-security'
 export default [ security.configs.recommended ]   // every rule is "error"
+```
+
+### Static Analysis Platform (SonarQube)
+
+See [`sonarqube.md`](sonarqube.md) for the edition choice, the quality gate and the canonical
+thresholds it has to reproduce.
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| sonar-scanner | CLI analysis; reads `sonar-project.properties` for anything not passed as `-D` | `npm install -D sonarqube-scanner`, or the CLI scanner installed once on the runner |
+| lcov reporter | The scanner cannot read Vitest's `text`, `html` or `cobertura` output — it wants `coverage/lcov.info` | `--coverage.reporter=lcov` |
+
+```bash
+# What `run-tests.sh -s Sonar` runs.
+npx vitest run --coverage --coverage.reporter=lcov
+sonar-scanner \
+  -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+  -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+  -Dsonar.qualitygate.wait=true
 ```
 
 ### Test Categorization
@@ -410,6 +455,29 @@ exclude_dirs = ["tests", "migrations"]
 # run: bandit -r src -c pyproject.toml   (exit 1 on any HIGH severity finding)
 ```
 
+### Static Analysis Platform (SonarQube)
+
+See [`sonarqube.md`](sonarqube.md) for the edition choice, the quality gate and the canonical
+thresholds it has to reproduce.
+
+| Tool | Purpose | Install |
+|------|---------|---------|
+| sonar-scanner | CLI analysis; reads `sonar-project.properties` for anything not passed as `-D` | CLI scanner on the runner, or `pip install sonarqube-scanner` |
+| `bandit -f json` | The Phase 6 SAST report, imported as external issues so the findings sit next to the code that caused them | Already the SAST gate |
+
+```bash
+# What `run-tests.sh -s Sonar` runs.
+coverage xml
+bandit -r src -f json -o bandit.json   # optional: imported by the scanner's bandit report path
+sonar-scanner \
+  -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+  -Dsonar.python.coverage.reportPaths=coverage.xml \
+  -Dsonar.qualitygate.wait=true
+```
+
+The bandit report is advisory inside Sonar; the exit code of `bandit -r src` is the gate. Importing
+it does not make the gate stronger — it makes the finding visible where it is fixed.
+
 ### Test Categorization
 
 ```python
@@ -493,6 +561,7 @@ directory = coverage_html_report
 | Performance | HttpClient concurrent / NBomber | autocannon / k6 | locust |
 | Security (dynamic) | Custom + Playwright + jwt_tool | Custom + Playwright + jwt_tool | Custom + Playwright + jwt_tool |
 | Security scanning | `dotnet list --vulnerable` + Roslyn + gitleaks | `npm audit` + eslint-plugin-security + gitleaks | pip-audit + bandit + gitleaks |
+| Static analysis | SonarScanner for .NET | sonar-scanner | sonar-scanner |
 | UI quality | Playwright + `axe-core` + visual snapshots | `@axe-core/playwright` + Playwright snapshots | Playwright + `axe-core` / `pa11y` |
 
 ---
@@ -538,6 +607,30 @@ jobs:
         run: dotnet build -warnaserror
       # Category=SecurityPR is the BOLA/auth/injection subset that must not wait for nightly.
       - run: dotnet test --filter "Category!=Security&Category!=Performance"
+
+  sonar:
+    needs: regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # blame and issue tracking need the history
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+      - run: dotnet tool install -g dotnet-sonarscanner
+      # The gate waits for itself: this step fails when the gate fails, so a
+      # queued analysis is never reported as a pass.
+      - name: Static analysis and the quality gate
+        run: |
+          dotnet sonarscanner begin /k:"$SONAR_PROJECT_KEY" /d:sonar.qualitygate.wait=true
+          dotnet build
+          dotnet test --collect:"XPlat Code Coverage" --results-directory ./test-results
+          dotnet sonarscanner end
+        env:
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   full:
     needs: regression
@@ -600,6 +693,29 @@ jobs:
       - name: SAST
         run: npx eslint . --max-warnings=0
       - run: npx vitest run --coverage --testNamePattern "^(?!.*(Security(?!PR)|Performance))"
+
+  sonar:
+    needs: regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # blame and issue tracking need the history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Static analysis and the quality gate
+        run: |
+          npx vitest run --coverage --coverage.reporter=lcov
+          npx sonarqube-scanner \
+            -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.qualitygate.wait=true
+        env:
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   full:
     needs: regression

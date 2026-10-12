@@ -46,7 +46,7 @@ case "$name" in
         # One write, not several: the call site pipes this into `grep -q`,
         # which exits as soon as it matches. A later write would then take
         # SIGPIPE and, under `pipefail`, look like a failed tool listing.
-        printf 'Package Id                             Version      Commands\n-------------------------------------- ------------ ------------------------------\ndotnet-stryker                         4.0.0        dotnet-stryker\ndotnet-reportgenerator-globaltool      5.3.5        reportgenerator\n'
+        printf 'Package Id                             Version      Commands\n-------------------------------------- ------------ ------------------------------\ndotnet-stryker                         4.0.0        dotnet-stryker\ndotnet-reportgenerator-globaltool      5.3.5        reportgenerator\ndotnet-sonarscanner                    7.0.0        dotnet-sonarscanner\n'
         if [[ "${SHIM_KILL_PIPE:-}" == "1" ]]; then
           kill -PIPE $$
         fi

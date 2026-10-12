@@ -1,7 +1,7 @@
 ---
 name: quality-assurance-4all
 version: 2.0.0
-description: End-to-end QA pipeline from spec to production for any stack (.NET, Node.js, Python). Quality gates for TDD, BDD, SDD, threat modeling and abuse cases, unit + integration + contract testing, code coverage, property-based testing, concurrency and idempotency, security (OWASP API Top 10 + dependency/secret/SAST scanning and SBOM), performance, mutation testing, accessibility and visual regression, and regression suite stratification with enforced tier budgets. Use when setting up QA for a new project, establishing team QA standards, auditing test coverage, defining a CI/CD quality pipeline, or preparing a solution for production release.
+description: End-to-end QA pipeline from spec to production for any stack (.NET, Node.js, Python). Quality gates for TDD, BDD, SDD, threat modeling and abuse cases, unit + integration + contract testing, code coverage, property-based testing, concurrency and idempotency, security (OWASP API Top 10 + dependency/secret/SAST scanning and SBOM), performance, mutation testing, accessibility and visual regression, static analysis with a SonarQube quality gate, and regression suite stratification with enforced tier budgets. Use when setting up QA for a new project, establishing team QA standards, auditing test coverage, defining a CI/CD quality pipeline, or preparing a solution for production release.
 ---
 
 # Quality Assurance Pipeline — From Spec to Production
@@ -355,10 +355,18 @@ the problem is the one that fails. Exact command lines are in
 [`references/tools-by-stack.md`](references/tools-by-stack.md); the gate wording is in
 [`references/quality-gates.md`](references/quality-gates.md) (Phase 6).
 
+**Static analysis platform.** A SonarQube gate runs alongside these scans — on the PR when the
+edition allows it, on the main branch otherwise. It is not a fifth scan: it aggregates the four
+above, imports the coverage report of Phase 8, and adds duplication, cognitive complexity and the
+maintainability ratings of the changed lines, which nothing else measures. Its gate **reproduces**
+the canonical thresholds rather than defining them, and it does not replace the dynamic tests above.
+See [`references/sonarqube.md`](references/sonarqube.md).
+
 ### Quality gate
 
 > **All OWASP API Top 10 risks are tested. SQL injection does not execute. No stack traces in error
-> responses. No `high`/`critical` finding survives the dependency, secret, SAST or SBOM scan.**
+> responses. No `high`/`critical` finding survives the dependency, secret, SAST or SBOM scan. The
+> quality gate — where one is wired — is green on the changed lines.**
 
 ---
 
@@ -417,6 +425,10 @@ Measure which lines of production code are executed by tests. Set a minimum thre
 | .NET | Coverlet | ReportGenerator |
 | Node.js/TS | @vitest/coverage-v8 / istanbul | built-in HTML |
 | Python | coverage.py | built-in HTML |
+
+Hand the same Cobertura / lcov / `coverage.xml` report to the static-analysis platform, so the
+new-code coverage condition of its gate is measured on real data instead of reporting 0% — see
+[`references/sonarqube.md`](references/sonarqube.md).
 
 ### Quality gate
 
@@ -489,6 +501,7 @@ The durations are enforced, not aspirational: `run-tests.sh --enforce-budget` (o
 # .\run-tests.ps1 -Stage Full        # Everything including perf + security
 # .\run-tests.ps1 -Stage Coverage    # Generate coverage report
 # .\run-tests.ps1 -Stage Mutation    # Run mutation testing
+# .\run-tests.ps1 -Stage Sonar       # Static analysis + the quality gate
 ```
 
 ```bash
@@ -498,11 +511,16 @@ The durations are enforced, not aspirational: `run-tests.sh --enforce-budget` (o
 # ./run-tests.sh -s Full --mutation-threshold 60
 # ./run-tests.sh -s Coverage
 # ./run-tests.sh -s Mutation
+# ./run-tests.sh -s Sonar              # needs SONAR_PROJECT_KEY, and SONAR_TOKEN
 ```
+
+`Coverage`, `Mutation` and `Sonar` are untiered: they are tools you reach for, not tiers, so they
+carry no duration budget.
 
 ### Quality gate
 
-> **Smoke passes on every commit. Regression passes on every PR. Full passes before every release.**
+> **Smoke passes on every commit. Regression passes on every PR. Full passes before every release.
+> The quality gate is green before release.**
 
 ---
 
@@ -560,9 +578,9 @@ SLO targets and alert thresholds are consolidated in
 | 3. Behavior | BDD | All acceptance criteria covered | Reqnroll + Gherkin |
 | 4. Integration | Test Pyramid | All endpoints × tenants tested; one effect under concurrency | Playwright + WebApplicationFactory + Testcontainers |
 | 5. Edge cases | Property-Based | 200+ random cases per property | FsCheck |
-| 6. Security | OWASP API Top 10 + static scans | All 10 risks tested; scans clean | Custom + Playwright + SCA/SAST/secret scanners |
+| 6. Security | OWASP API Top 10 + static scans | All 10 risks tested; scans clean; quality gate green | Custom + Playwright + SCA/SAST/secret scanners + SonarQube |
 | 7. Performance | Load Testing | P95 < 2000ms, error rate < 0.1% | HttpClient concurrent / NBomber |
-| 8. Coverage | Code Coverage | ≥ 80% line coverage | Coverlet + ReportGenerator |
+| 8. Coverage | Code Coverage | ≥ 80% line coverage | Coverlet + ReportGenerator → SonarQube |
 | 9. Mutation | Mutation Testing | ≥ 60% mutation score | Stryker.NET |
 | 10. Regression | Stratified Suite | Smoke/Regression/Full pass within budget | NUnit Categories + CI script |
 | 11. Production | Pre-prod checklist | All items checked | Manual + automated |
@@ -644,6 +662,7 @@ Detailed deep-dive documentation for each topic:
 | `references/performance-testing.md` | Performance testing with code examples (HttpClient, NBomber, k6, locust) |
 | `references/concurrency-and-idempotency.md` | Races, retries, double submit, TOCTOU, webhook replay, keyset pagination |
 | `references/quality-engineering-practices.md` | Flaky tests, test data, a11y, visual regression, code review checklist, Definition of Done |
+| `references/sonarqube.md` | Static analysis platform: editions and their limits, the quality gate as data, per-stack wiring, CI |
 
 ### assets/
 
@@ -655,6 +674,7 @@ Reusable templates and configuration snippets:
 | `assets/bdd-feature-template.feature` | Gherkin BDD scenario template (Smoke, Regression, Security, Property-Based) |
 | `assets/pre-production-checklist.md` | Pre-production quality checklist with sign-off table |
 | `assets/coverage-config.xml` | Coverlet coverage configuration snippet for .csproj |
+| `assets/sonar-quality-gate.json` | The SonarQube quality gate, as data — a copy of the canonical thresholds, linted against them |
 
 ### scripts/
 

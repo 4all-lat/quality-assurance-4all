@@ -34,7 +34,7 @@ own parameter binding.
 | Script | Purpose |
 |--------|---------|
 | `setup-qa-project.sh` / `setup-qa-project.ps1` | Scaffold a test project (folder structure + QA packages) for .NET, Node.js, or Python |
-| `run-tests.sh` / `run-tests.ps1` | Stratified test runner (Smoke / Regression / Full / Coverage / Mutation) |
+| `run-tests.sh` / `run-tests.ps1` | Stratified test runner (Smoke / Regression / Full / Coverage / Mutation / Sonar) |
 
 ---
 
@@ -53,6 +53,7 @@ categorization; `run-tests.sh` **auto-detects the stack** for .NET (`.sln`/`.csp
 ./run-tests.sh -s Full --mutation-threshold 60
 ./run-tests.sh -s Coverage --project ./src/MyProject.Tests/MyProject.Tests.csproj
 ./run-tests.sh -s Regression --enforce-budget   # CI: overrunning 5min fails the build
+./run-tests.sh -s Sonar                          # SONAR_PROJECT_KEY must be set
 ```
 
 ```powershell
@@ -60,6 +61,7 @@ categorization; `run-tests.sh` **auto-detects the stack** for .NET (`.sln`/`.csp
 .\run-tests.ps1 -Stage Smoke
 .\run-tests.ps1 -Stage Full -MutationThreshold 60
 .\run-tests.ps1 -Stage Regression -EnforceBudget
+.\run-tests.ps1 -Stage Sonar
 ```
 
 ### Parameters
@@ -68,7 +70,7 @@ categorization; `run-tests.sh` **auto-detects the stack** for .NET (`.sln`/`.csp
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `-s`, `--stage` | `Smoke` \| `Regression` \| `Full` \| `Coverage` \| `Mutation` | — | Test stage to run (case-insensitive) |
+| `-s`, `--stage` | `Smoke` \| `Regression` \| `Full` \| `Coverage` \| `Mutation` \| `Sonar` | — | Test stage to run (case-insensitive) |
 | `-p`, `--project` | path | auto-detect | Path to test project (`.csproj`, `package.json`, or test dir) |
 | `-o`, `--output-dir` | path | `./test-results` | Output directory for artifacts |
 | `-m`, `--mutation-threshold` | int | `60` | Minimum mutation score for the run to pass |
@@ -78,7 +80,7 @@ categorization; `run-tests.sh` **auto-detects the stack** for .NET (`.sln`/`.csp
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `Stage` | `Smoke\|Regression\|Full\|Coverage\|Mutation` | — | Test stage to run |
+| `Stage` | `Smoke\|Regression\|Full\|Coverage\|Mutation\|Sonar` | — | Test stage to run |
 | `Project` | string | auto-detect | Path to test `.csproj` file |
 | `OutputDir` | string | `./test-results` | Output directory for artifacts |
 | `MutationThreshold` | int | `60` | Minimum mutation score for the run to pass |
@@ -124,6 +126,12 @@ public void GetEndpoint_P95WithinBudget() { ... }
 | Full | all + mutation | all + mutation | ~15min | Everything + the static scans + Stryker / mutmut |
 | Coverage | `--collect:"XPlat Code Coverage"` + ReportGenerator | `vitest --coverage` / `pytest --cov` | varies | Coverage report |
 | Mutation | `dotnet stryker --break-at N` | `stryker run` / `mutmut run` | ~10min | Mutation testing (fails below threshold) |
+| Sonar | `dotnet sonarscanner begin` → build → test → `end` | `sonar-scanner` after the coverage run | varies | Static analysis + the quality gate (fails when the gate fails) |
+
+The `Sonar` stage needs `SONAR_PROJECT_KEY`, and `SONAR_TOKEN` for a server that asks for one;
+`SONAR_HOST_URL` points at a self-hosted server. Without a project key the stage exits `1` before
+running anything: analyzing against an empty key would report a gate verdict for a project that does
+not exist. See [`../references/sonarqube.md`](../references/sonarqube.md).
 
 `Category=SecurityPR` is a distinct category from `Security`, so the .NET filter above
 (`Category!=Security`) and pytest's `-m "not security ..."` already include it without changes. The
@@ -134,8 +142,9 @@ that decides which security tests belong in the PR tier.
 ### Tier budgets
 
 Each stage is timed and compared against its tier budget — Smoke `30s`, Regression `300s`, Full
-`900s`; `Coverage` and `Mutation` are unbudgeted. By default an overrun is a warning, because a slow
-laptop is not a regression:
+`900s`; `Coverage`, `Mutation` and `Sonar` are unbudgeted, because they are tools you reach for
+rather than tiers of the feedback loop. By default an overrun is a warning, because a slow laptop is
+not a regression:
 
 ```
   Duration: 412s / budget 300s for the Regression tier
@@ -179,6 +188,15 @@ project's own configuration.
 - name: Run Full Suite (nightly)
   run: ./scripts/run-tests.sh -s Full
   shell: bash
+
+# After the tiers, never inside one: an analysis is not a test tier.
+- name: Static analysis and the quality gate
+  run: ./scripts/run-tests.sh -s Sonar
+  shell: bash
+  env:
+    SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+    SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 ```
 
 #### Azure DevOps (PowerShell runner)

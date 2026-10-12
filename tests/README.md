@@ -6,8 +6,8 @@ none of its own ~900 lines of bash and PowerShell were tested.
 
 Nothing needs to be installed: `bash` and `git` are enough. The external
 toolchains the scripts call — `dotnet`, `npm`, `npx`, `python3`, `pytest`,
-`reportgenerator`, `stryker` — are intercepted by PATH shims, so the suite runs
-identically on a machine with nothing installed and on a CI runner.
+`reportgenerator`, `stryker`, `sonar-scanner` — are intercepted by PATH shims, so
+the suite runs identically on a machine with nothing installed and on a CI runner.
 
 ## Running
 
@@ -38,9 +38,9 @@ to the helpers that use them instead of in a parallel tree.
 ## How the shims work
 
 `install_shims` symlinks `dotnet`, `npm`, `npx`, `python3`, `python`, `pytest`,
-`reportgenerator` and `stryker` to a single script, `shims/_recorder`. Every call
-the scripts make is appended to `$SHIM_LOG` as `name<TAB>arg<TAB>arg…`, and the
-shim exits with `$SHIM_EXIT` (default `0`).
+`reportgenerator`, `stryker` and `sonar-scanner` to a single script,
+`shims/_recorder`. Every call the scripts make is appended to `$SHIM_LOG` as
+`name<TAB>arg<TAB>arg…`, and the shim exits with `$SHIM_EXIT` (default `0`).
 
 That turns each hard-coded filter into a testable contract:
 
@@ -80,6 +80,7 @@ assert it with this switch.
 | `run-tests.detect` | stack detection, and that an unusable `--project` is a hard error |
 | `run-tests.dispatch` | the exact command line for every stack × stage, output dirs, failure propagation and accumulation |
 | `run-tests.budget` | the tier budgets (30/300/900s) appear in both runners, the warning is not a failure, and `--enforce-budget` turns an overrun into exit `1` |
+| `run-tests.sonar` | the Sonar stage needs `SONAR_PROJECT_KEY`, runs the scanner the way each stack requires (the `begin`→build→test→`end` window for .NET), waits for the gate verdict, and is untiered |
 | `setup.argparse` | the same exit-code contract for the scaffolder, plus the stack enum |
 | `setup.scaffold` | the generated tree: folders, coverage thresholds, pytest markers, requirements |
 | `parity` | stages, flags, stack enum, default threshold and Stryker project selection agree between bash and PowerShell |

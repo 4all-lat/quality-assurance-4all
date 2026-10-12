@@ -95,6 +95,42 @@ all_docs="$(cat "${DOC_FILES[@]}")"
 assert_not_contains "$all_docs" "P95 latency | < 2s" "no file writes P95 as seconds"
 assert_not_contains "$all_docs" "0% errors" "no file writes the error-rate gate as 0%"
 
+# --- the static-analysis gate is the canonical table, applied ---------------
+#
+# The SonarQube quality gate is a copy of the numeric rows above, kept as an
+# artifact so this can be checked at all. A gate that drifted from the table
+# would enforce different numbers than the documents promise, and the two would
+# look equally authoritative — which is exactly the failure this whole file
+# exists to prevent. The gate is the copy, so the table is what has to be
+# satisfied first.
+
+GATE="$REPO_ROOT/assets/sonar-quality-gate.json"
+assert_file "$GATE" "assets/sonar-quality-gate.json exists"
+gate="$(cat "$GATE")"
+
+assert_contains "$source_doc" "New-code coverage | \`>= 80%\`" \
+  "the canonical table states new-code coverage at 80%"
+assert_contains "$gate" '"metric": "coverage"' "the gate conditions on coverage"
+assert_contains "$gate" '"error": "80"' "the gate holds coverage at the canonical 80%"
+
+assert_contains "$source_doc" "Duplicated lines on new code | \`<= 3%\`" \
+  "the canonical table states duplication at 3% on new code"
+assert_contains "$gate" '"metric": "duplicated_lines_density"' "the gate conditions on duplication"
+assert_contains "$gate" '"error": "3"' "the gate holds duplication at the canonical 3%"
+
+assert_contains "$source_doc" "Security hotspots reviewed | \`100%\`" \
+  "the canonical table states hotspots reviewed at 100%"
+assert_contains "$gate" '"metric": "security_hotspots_reviewed"' "the gate conditions on hotspots reviewed"
+
+assert_contains "$source_doc" "Ratings on new code" "the canonical table states the ratings gate"
+for rating in new_maintainability_rating new_reliability_rating new_security_rating; do
+  assert_contains "$gate" "$rating" "the gate conditions on $rating"
+done
+
+# The gate names the table it copies, so whoever finds the gate first is sent
+# back to the source rather than trusting the copy.
+assert_contains "$gate" "references/quality-gates.md" "the gate records the table it copies"
+
 # --- the tier budgets ------------------------------------------------------
 
 for budget in "30s" "5min" "15min"; do

@@ -77,7 +77,8 @@ for needle in \
   "Concurrencia e idempotencia" \
   "escaneos estáticos" \
   "--enforce-budget" \
-  "SecurityPR"
+  "SecurityPR" \
+  "SonarQube"
 do
   assert_contains "$doc" "$needle" "the diagram carries the gate: $needle"
 done

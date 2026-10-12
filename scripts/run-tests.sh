@@ -15,9 +15,10 @@
 #   full       ~15min, nightly/pre-release — everything + mutation
 #   coverage   generate coverage report
 #   mutation   run mutation testing only (fails if score < threshold)
+#   sonar      static analysis + the SonarQube quality gate (fails if the gate fails)
 #
 # Options:
-#   -s, --stage <stage>               smoke|regression|full|coverage|mutation
+#   -s, --stage <stage>               smoke|regression|full|coverage|mutation|sonar
 #   -p, --project <path>              test project (default: auto-detect)
 #   -o, --output-dir <dir>            artifact directory (default: ./test-results)
 #   -m, --mutation-threshold <0-100>  minimum mutation score (default: 60)
@@ -27,6 +28,11 @@
 # Tier budgets: the stage is timed and reported against its budget (Smoke 30s,
 # Regression 5min, Full 15min). With --enforce-budget an overrun fails the run;
 # QA_TIER_BUDGET=<seconds> overrides the budget for a slower CI runner.
+# Coverage, Mutation and Sonar are untiered: they are tools, not tiers.
+#
+# Sonar stage: needs SONAR_PROJECT_KEY, and SONAR_TOKEN for a server that asks
+# for one. SONAR_HOST_URL points at a self-hosted server; without it the
+# scanner uses its own default.
 #
 # Exit codes:
 #   0  the requested stage ran and succeeded
@@ -38,6 +44,7 @@
 #   ./run-tests.sh -s Full --project ./src/MyProject.Tests/MyProject.Tests.csproj
 #   ./run-tests.sh -s Mutation --mutation-threshold 60
 #   ./run-tests.sh -s Smoke --enforce-budget
+#   ./run-tests.sh -s Sonar
 # --- end usage ---
 #
 set -uo pipefail
@@ -98,8 +105,17 @@ tier_budget() {
 }
 
 STAGE="$(printf '%s' "$STAGE" | tr '[:upper:]' '[:lower:]')"
-if [[ -z "$STAGE" || ! "$STAGE" =~ ^(smoke|regression|full|coverage|mutation)$ ]]; then
-  echo "ERROR: --stage is required. One of: Smoke, Regression, Full, Coverage, Mutation." >&2
+if [[ -z "$STAGE" || ! "$STAGE" =~ ^(smoke|regression|full|coverage|mutation|sonar)$ ]]; then
+  echo "ERROR: --stage is required. One of: Smoke, Regression, Full, Coverage, Mutation, Sonar." >&2
+  exit 1
+fi
+
+# The Sonar stage without a project key would analyze against an empty key and
+# report a gate verdict for a project that does not exist — a green light for
+# nothing. That is an environment failure, not a usage error: the command line
+# was right, the machine was not configured.
+if [[ "$STAGE" == "sonar" && -z "${SONAR_PROJECT_KEY:-}" ]]; then
+  echo "ERROR: the Sonar stage requires SONAR_PROJECT_KEY to be set." >&2
   exit 1
 fi
 
@@ -190,6 +206,18 @@ run_dotnet() {
       echo "  [2/2] Running mutation testing..."
       ensure_dotnet_tool "dotnet-stryker"
       dotnet stryker ${PROJECT:+-p "$PROJECT"} --output-path "$OUTPUT_DIR/mutation-report" --break-at "$MUTATION_THRESHOLD" || FAILED=1 ;;
+    sonar)
+      # The .NET scanner wraps the build — begin, build, test, end. That is why
+      # this stage builds and tests instead of only analyzing: the coverage
+      # report the gate measures has to be produced between begin and end.
+      print_header "Sonar" "Static analysis and the quality gate (SonarQube)"
+      ensure_dotnet_tool "dotnet-sonarscanner"
+      dotnet sonarscanner begin "/k:$SONAR_PROJECT_KEY" \
+        "/d:sonar.qualitygate.wait=true" \
+        "/d:sonar.cs.cobertura.reportsPaths=$OUTPUT_DIR/**/coverage.cobertura.xml" || FAILED=1
+      dotnet build || FAILED=1
+      dotnet test "${project_args[@]}" --collect:"XPlat Code Coverage" || FAILED=1
+      dotnet sonarscanner end || FAILED=1 ;;
   esac
 }
 
@@ -221,6 +249,15 @@ run_node() {
       npx vitest run --coverage || FAILED=1
       echo "  [2/2] Running mutation testing..."
       npx stryker run || FAILED=1 ;;
+    sonar)
+      # The scanner reads the build output, so the report has to exist before it
+      # runs; lcov is the one format it accepts from Vitest.
+      print_header "Sonar" "Static analysis and the quality gate (SonarQube)"
+      npx vitest run --coverage --coverage.reporter=lcov || FAILED=1
+      npx sonar-scanner \
+        "-Dsonar.projectKey=$SONAR_PROJECT_KEY" \
+        "-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info" \
+        "-Dsonar.qualitygate.wait=true" || FAILED=1 ;;
   esac
 }
 
@@ -244,6 +281,14 @@ run_python() {
       "$PY" -m pytest --cov --cov-report=html --cov-report=term || FAILED=1
       echo "  [2/2] Running mutation testing..."
       "$PY" -m mutmut run || FAILED=1 ;;
+    sonar)
+      # The scanner reads the report, so it has to be written before it runs.
+      print_header "Sonar" "Static analysis and the quality gate (SonarQube)"
+      "$PY" -m pytest --cov --cov-report=xml || FAILED=1
+      sonar-scanner \
+        "-Dsonar.projectKey=$SONAR_PROJECT_KEY" \
+        "-Dsonar.python.coverage.reportPaths=coverage.xml" \
+        "-Dsonar.qualitygate.wait=true" || FAILED=1 ;;
   esac
 }
 

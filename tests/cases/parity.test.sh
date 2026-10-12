@@ -124,7 +124,7 @@ done
 SH_STAGES="$(sh_stages "$SH_RUN")"
 PS_STAGES="$(ps_stages "$PS_RUN")"
 compare_sets "run-tests" "stages" "$SH_STAGES" "$PS_STAGES"
-assert_eq "$(printf '%s\n' "$SH_STAGES" | wc -l | tr -d ' ')" "5" "the runner defines five stages"
+assert_eq "$(printf '%s\n' "$SH_STAGES" | wc -l | tr -d ' ')" "6" "the runner defines six stages"
 
 # --- flags ------------------------------------------------------------------
 
